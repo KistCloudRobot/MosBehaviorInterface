@@ -8,6 +8,7 @@ public class PersonCall extends AckMessage {
 	private int callID;
 	
 	public PersonCall(int locationID, int callID) {
+		this.messageType = MessageType.PersonCall;
 		this.locationID = locationID;
 		this.callID = callID;
 	}

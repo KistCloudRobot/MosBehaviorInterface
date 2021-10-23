@@ -15,12 +15,14 @@ public enum MessageType {
 	AckEndPause(0x57295C2B), 	AckEndResume(0xBD2D122E), 
 	AckDoorOpen(0x71B2005B), 	AckEndDoorOpen(0xC9D2476A), 
 	AckDoorClose(0x70F29DDD), 	AckEndDoorClose(0x98378F4B), 
-	AckPersonCall(0xA88DA5FE), 
+	AckLogin(0x32BFB368), 		AckEndLogin(0x190ADBF8),
+	PersonCall(0xA88DA5FE), 
 	ReqMove(0x559657E8), 		ReqCancelMove(0x83EDC641), 
 	ReqLoad(0xF8957DC8), 		ReqUnload(0xF03739D3), 
 	ReqCharge(0x16B960EE), 		ReqChargeStop(0xCBC6486F), 
 	ReqPause(0x28EC89C1), 		ReqResume(0xE09AF0FB), 
-	ReqDoorOpen(0x078F486F), 	ReqDoorClose(0x4DDA0F69);
+	ReqDoorOpen(0x078F486F), 	ReqDoorClose(0x4DDA0F69),
+	ReqLogin(0x74A3BD60);
 	
 	private final int id;
 	private static final Map<Integer, MessageType> BY_VALUE = new HashMap<>();

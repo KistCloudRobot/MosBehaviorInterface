@@ -5,5 +5,6 @@ public enum ActionType {
 	load, unload, 
 	charge, chargeStop, 
 	pause, resume, 
-	doorOpen, doorClose;
+	doorOpen, doorClose,
+	login;
 }

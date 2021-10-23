@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.ActionType;
+import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.RobotID;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 import kr.ac.uos.ai.arbi.ltm.DataSource;
@@ -25,25 +26,25 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	private MosInterface mi;
 
 	private final String brokerURL;
-	private final String serverName;
+	private final String mcArbiID;
 	private final String mosURL;
 	private final String robotID;
 	
 	private final String taskManagerURI;
 	
-	public RobotBehaviorInterface(String brokerURL, String serverName, String mosURL, String robotID) {
+	public RobotBehaviorInterface(String brokerURL, String mcArbiID, String mosURL, String robotID) {
 		this.brokerURL = brokerURL;
-		this.serverName = serverName;
+		this.mcArbiID = mcArbiID;
 		this.mosURL = mosURL;
 		this.robotID = robotID;
 		
-		this.taskManagerURI = "agent://www.arbi.com/" + serverName + "/TaskManager";
+		this.taskManagerURI = "agent://www.arbi.com/" + this.mcArbiID + "/TaskManager";
 	}
 	
 	@Override
 	public void onStart() {
 		try {
-			String dataSourceURI = "ds://www.arbi.com/" + serverName + "/BehaviorInterface";
+			String dataSourceURI = "ds://www.arbi.com/" + this.mcArbiID + "/BehaviorInterface";
 			ds = new DataSource();
 			ds.connect(brokerURL, dataSourceURI, 2);
 
@@ -57,6 +58,8 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 			int mosPort = Integer.parseInt(mosComponents[mosComponents.length - 1]);
 			this.initDS();
 			mi.connect(mosURL, mosPort);
+			System.out.println("login...");
+			System.out.println(mi.login(LoginID.valueOf(this.mcArbiID)));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,6 +83,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	
 	@Override
 	public String onRequest(String sender, String request) {
+		System.out.println("on request : " + request.toString());
 		try {
 			GeneralizedList gl = GLFactory.newGLFromGLString(request);
 			ActionType actionType = ActionType.valueOf(gl.getName());
@@ -123,15 +127,11 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 			case resume:
 				response = this.mi.resume(actionID);
 				break;
-			case doorOpen:
-				doorID = gl.getExpression(1).asValue().stringValue();
-				response = this.mi.doorOpen(actionID, doorID);
-				break;
-			case doorClose:
-				doorID = gl.getExpression(1).asValue().stringValue();
-				response = this.mi.doorClose(actionID, doorID);
+			default:
+				response = "(fail)";
 				break;
 			}
+			System.out.println("response : " + response);
 			return response;
 		} 
 		catch (ParseException e) {
@@ -146,7 +146,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		}
 	}
 	
-	public void onRTSR(String robotID, String status, int x, int y, int theta, int speed, int battery, String loading) {
+	public void onRTSR(String robotID, String status, float x, float y, int theta, int speed, int battery, String loading) {
 		sendRobotPosition(robotID, x, y);
 		sendRobotLoading(robotID, loading);
 		sendRobotSatus(robotID, status);
@@ -154,7 +154,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		sendRobotBattery(robotID, battery);
 	}
 	
-	private void sendRobotPosition(String robotID, int x, int y) {
+	private void sendRobotPosition(String robotID, float x, float y) {
 		String gl = "(RobotPosition \"" + robotID + "\" " + x + " " + y + ")";
 //		System.out.println(gl);
 		ds.assertFact(gl);
@@ -193,21 +193,10 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		ds.updateFact(updateGL);
 	}
 	
-	public void sendAckEnd(String actionType, String actionID) {
-		Expression id = GLFactory.newExpression(GLFactory.newValue(actionID));
-		Expression acion = GLFactory.newExpression(GLFactory.newGL("actionID", id));
-		GeneralizedList gl = GLFactory.newGL(actionType, acion);
-		//TODO task manager url
-		this.send(taskManagerURI, GLFactory.unescape(gl.toString()));
-	}
-	
-	public void sendAckEnd(String actionType, String actionID, String result) {
-		Expression id = GLFactory.newExpression(GLFactory.newValue(actionID));
-		Expression acion = GLFactory.newExpression(GLFactory.newGL("actionID", id));
-		Expression actionResult = GLFactory.newExpression(GLFactory.newValue(result));
-		GeneralizedList gl = GLFactory.newGL(actionType, acion, actionResult);
-		//TODO task manager url
-		this.send(taskManagerURI, GLFactory.unescape(gl.toString()));
+	@Override
+	public void sendMessageToTM(String message) throws Exception {
+		System.out.println("send : " + message);
+		this.send(taskManagerURI, message);
 	}
 	
 	public void sendPersonCall(int locationID, int cmdID) {

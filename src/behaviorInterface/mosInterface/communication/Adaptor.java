@@ -9,7 +9,6 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import behaviorInterface.message.acknowledge.AckCancelMove;
 import behaviorInterface.message.acknowledge.AckCharge;
@@ -22,11 +21,13 @@ import behaviorInterface.message.acknowledge.AckEndChargeStop;
 import behaviorInterface.message.acknowledge.AckEndDoorClose;
 import behaviorInterface.message.acknowledge.AckEndDoorOpen;
 import behaviorInterface.message.acknowledge.AckEndLoad;
+import behaviorInterface.message.acknowledge.AckEndLogin;
 import behaviorInterface.message.acknowledge.AckEndMove;
 import behaviorInterface.message.acknowledge.AckEndPause;
 import behaviorInterface.message.acknowledge.AckEndResume;
 import behaviorInterface.message.acknowledge.AckEndUnload;
 import behaviorInterface.message.acknowledge.AckLoad;
+import behaviorInterface.message.acknowledge.AckLogin;
 import behaviorInterface.message.acknowledge.AckMessage;
 import behaviorInterface.message.acknowledge.AckMove;
 import behaviorInterface.message.acknowledge.AckPause;
@@ -40,11 +41,13 @@ import behaviorInterface.message.request.ReqChargeStop;
 import behaviorInterface.message.request.ReqDoorClose;
 import behaviorInterface.message.request.ReqDoorOpen;
 import behaviorInterface.message.request.ReqLoad;
+import behaviorInterface.message.request.ReqLogin;
 import behaviorInterface.message.request.ReqMessage;
 import behaviorInterface.message.request.ReqMove;
 import behaviorInterface.message.request.ReqUnload;
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.DoorID;
+import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.MessageType;
 import behaviorInterface.mosInterface.mosValue.RobotID;
 import behaviorInterface.mosInterface.mosValue.RobotStatus;
@@ -79,20 +82,34 @@ public class Adaptor extends Thread {
 	}
 	
 	public void connect(String ip, int port) {
-        try {
-			socket = new Socket(ip, port);
-	        out = socket.getOutputStream();
-	        in = socket.getInputStream();
-	        this.start();
-		} catch (IOException e) {
-			System.out.println("waiting...");
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e1) {
+		while(true) {
+	        try {
+				socket = new Socket(ip, port);
+		        out = socket.getOutputStream();
+		        in = socket.getInputStream();
+		        this.start();
+		        if(this.socket.isConnected()) {
+		    		System.out.println("MOS connected : " + ip + ":" + port);
+		        	break;
+		        }
+		        else {
+					System.out.println("waiting...");
+					Thread.sleep(5000);
+					continue;
+		        }
+			} catch (IOException e) {
+				System.out.println("waiting...");
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				continue;
+			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				e.printStackTrace();
 			}
-			this.connect(ip, port);
 		}
 	}
 	
@@ -118,10 +135,12 @@ public class Adaptor extends Thread {
 				sb.append("\n");
 				int protocolID = byteBuffer.getInt();
 				int messageTypeID = byteBuffer.getInt();
-				sb.append("messageTypeID : " + messageTypeID + "\n");
+//				sb.append("messageTypeID : " + messageTypeID + "\n");
 				MessageType messageType = MessageType.getEnum(messageTypeID);
 				sb.append("messageType : " + messageType + "\n");
-//				System.out.println(sb.toString());
+				if(messageType != MessageType.RTSR) {
+					System.out.println(sb.toString());
+				}
 				int packetSize = byteBuffer.getInt();
 				byte[] packetData = this.readByte(packetSize - HEADER_SIZE);
 				
@@ -186,7 +205,11 @@ public class Adaptor extends Thread {
 			case AckEndDoorOpen:
 			case AckDoorClose:
 			case AckEndDoorClose:
-			case AckPersonCall:
+				if(this.isLocal) return true;
+				else return false;
+			case PersonCall:
+			case AckLogin:
+			case AckEndLogin:
 				return true;
 			default:
 				return false;
@@ -210,8 +233,10 @@ public class Adaptor extends Thread {
 			case RTSR:
 				robotID = RobotID.getEnum(id);
 				robotStatus = RobotStatus.getEnum(byteBuffer.getInt());
-				int x = byteBuffer.getInt() / 1000;
-				int y = byteBuffer.getInt() / 1000;
+				float x = byteBuffer.getInt();
+				float y = byteBuffer.getInt();
+				x = x / 1000;
+				y = y / 1000;
 				int theta = byteBuffer.getInt();
 				int speed = byteBuffer.getInt();
 				int battery = byteBuffer.getInt();
@@ -221,7 +246,6 @@ public class Adaptor extends Thread {
 				break;
 			case AckDoorOpen:
 				doorID = DoorID.getEnum(id);
-				result = byteBuffer.getInt();
 				ackMessage = new AckDoorOpen(doorID);
 				this.mi.onMessage(ackMessage);
 				break;
@@ -233,7 +257,6 @@ public class Adaptor extends Thread {
 				break;
 			case AckDoorClose:
 				doorID = DoorID.getEnum(id);
-				result = byteBuffer.getInt();
 				ackMessage = new AckDoorClose(doorID);
 				this.mi.onMessage(ackMessage);
 				break;
@@ -243,10 +266,19 @@ public class Adaptor extends Thread {
 				ackMessage = new AckEndDoorClose(doorID, result);
 				this.mi.onMessage(ackMessage);
 				break;
-			case AckPersonCall:
+			case PersonCall:
 				int locationID = id;
 				int callID = byteBuffer.getInt();
 				ackMessage = new PersonCall(locationID, callID);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckLogin:
+				ackMessage = new AckLogin(LoginID.getEnum(id));
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckEndLogin:
+				result = byteBuffer.getInt();
+				ackMessage = new AckEndLogin(LoginID.getEnum(id), result);
 				this.mi.onMessage(ackMessage);
 				break;
 			default:
@@ -258,8 +290,10 @@ public class Adaptor extends Thread {
 			case RTSR:
 				robotID = RobotID.getEnum(id);
 				robotStatus = RobotStatus.getEnum(byteBuffer.getInt());
-				int x = (int) (byteBuffer.getInt() & 0xffffffffL) / 1000;
-				int y = (int) (byteBuffer.getInt() & 0xffffffffL) / 1000;
+				float x = byteBuffer.getInt();
+				float y = byteBuffer.getInt();
+				x = x / 1000;
+				y = y / 1000;
 				int theta = (int) (byteBuffer.getInt() & 0xffffffffL);
 				int speed = (int) (byteBuffer.getInt() & 0xffffffffL);
 				int battery = (int) (byteBuffer.getInt() & 0xffffffffL);
@@ -353,28 +387,13 @@ public class Adaptor extends Thread {
 				ackMessage = new AckEndResume(robotID);
 				this.mi.onMessage(ackMessage);
 				break;
-			case AckDoorOpen:
-				doorID = DoorID.getEnum(id);
-				result = byteBuffer.getInt();
-				ackMessage = new AckDoorOpen(doorID);
+			case AckLogin:
+				ackMessage = new AckLogin(LoginID.getEnum(id));
 				this.mi.onMessage(ackMessage);
 				break;
-			case AckEndDoorOpen:
-				doorID = DoorID.getEnum(id);
+			case AckEndLogin:
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndDoorOpen(doorID, result);
-				this.mi.onMessage(ackMessage);
-				break;
-			case AckDoorClose:
-				doorID = DoorID.getEnum(id);
-				result = byteBuffer.getInt();
-				ackMessage = new AckDoorClose(doorID);
-				this.mi.onMessage(ackMessage);
-				break;
-			case AckEndDoorClose:
-				doorID = DoorID.getEnum(id);
-				result = byteBuffer.getInt();
-				ackMessage = new AckEndDoorClose(doorID, result);
+				ackMessage = new AckEndLogin(LoginID.getEnum(id), result);
 				this.mi.onMessage(ackMessage);
 				break;
 			default:
@@ -389,6 +408,11 @@ public class Adaptor extends Thread {
 	private void send(ByteBuffer bf) {
 		try {
 			byte[] data = bf.array();
+//			System.out.print("send message : ");
+//			for(byte b : data) {
+//				System.out.print(String.format("%02X ", b));
+//			}
+//			System.out.println();
 			out.write(data);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -419,6 +443,11 @@ public class Adaptor extends Thread {
 			for(Integer i : reqMove.getPath()) {
 				bf.putInt(i);
 			}
+			System.out.print("move packet : ");
+			for(byte b : bf.array()) {
+				System.out.print(String.format("%02X ", b));
+			}
+			System.out.println();
 			send(bf);
 			break;
 		case ReqCancelMove:
@@ -526,6 +555,17 @@ public class Adaptor extends Thread {
 			bf.putInt(packetSize);
 			doorID = reqDoorClose.getDoorID();
 			bf.putInt(doorID.getValue());
+			send(bf);
+			break;
+		case ReqLogin:
+			ReqLogin reqLogin = (ReqLogin)message;
+			packetSize = 16;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(reqLogin.getLoginID().getValue());
 			send(bf);
 			break;
 		default:

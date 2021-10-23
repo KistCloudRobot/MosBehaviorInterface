@@ -3,31 +3,41 @@ package behaviorInterface;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
+import java.util.List;
 
 import behaviorInterface.mosInterface.MosInterface;
+import behaviorInterface.mosInterface.mosValue.ActionType;
+import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.RobotID;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 import kr.ac.uos.ai.arbi.framework.ArbiFrameworkServer;
 import kr.ac.uos.ai.arbi.ltm.DataSource;
+import kr.ac.uos.ai.arbi.model.GLFactory;
+import kr.ac.uos.ai.arbi.model.GeneralizedList;
+import kr.ac.uos.ai.arbi.model.parser.ParseException;
 
 public class LocalBehaviorInterface extends BehaviorInterface {
 	private DataSource ds;
 	private MosInterface mi;
 
 	private String brokerURL;
-	private String serverName;
+	private String mcArbiID;
 	private String mosURL;
+
+	private String taskManagerURI;
 	
-	public LocalBehaviorInterface(String brokerURL, String serverName, String mosURL) {
+	public LocalBehaviorInterface(String brokerURL, String mcArbiID, String mosURL) {
 		this.brokerURL = brokerURL;
-		this.serverName = serverName;
+		this.mcArbiID = mcArbiID;
 		this.mosURL = mosURL;
 	}
 	
 	@Override
 	public void onStart() {
 		try {
-			String dataSourceURI = "ds://www.arbi.com/" + serverName + "/BehaviorInterface";
+			taskManagerURI = "agent://www.arbi.com/Local/BehaviorInterface";
+			String dataSourceURI = "ds://www.arbi.com/" + this.mcArbiID + "/BehaviorInterface";
 			ds = new DataSource();
 			ds.connect(brokerURL, dataSourceURI, 2);
 
@@ -41,6 +51,8 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 			int port = Integer.parseInt(mosComponents[mosComponents.length - 1]);
 			this.initDS();
 			mi.connect(url, port);
+			System.out.println("login...");
+			System.out.println(mi.login(LoginID.valueOf(this.mcArbiID)));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -60,7 +72,43 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	}
 	
 	@Override
-	public void onRTSR(String robotID, String status, int x, int y, int theta, int speed, int battery, String loading) {
+	public String onRequest(String sender, String request) {
+		System.out.println("on request : " + request.toString());
+		try {
+			GeneralizedList gl = GLFactory.newGLFromGLString(request);
+			ActionType actionType = ActionType.valueOf(gl.getName());
+			String actionID = gl.getExpression(0).asGeneralizedList().getExpression(0).asValue().stringValue();
+			String response = null;
+			String doorID = null;
+			switch(actionType) {
+			case doorOpen:
+				doorID = gl.getExpression(1).asValue().stringValue();
+				response = this.mi.doorOpen(actionID, doorID);
+				break;
+			case doorClose:
+				doorID = gl.getExpression(1).asValue().stringValue();
+				response = this.mi.doorClose(actionID, doorID);
+				break;
+			default:
+				response = "(fail)";
+				break;
+			}
+			return response;
+		} 
+		catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "(fail)";
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "(fail)";
+		}
+	}
+	
+	@Override
+	public void onRTSR(String robotID, String status, float x, float y, int theta, int speed, int battery, String loading) {
 		try {
 			sendRobotInfo(robotID, x, y, loading);
 			Thread.sleep(30);
@@ -71,13 +119,13 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 		}
 	}
 
-	private void sendRobotInfo(String robotID, int x, int y, String loading) {
+	private void sendRobotInfo(String robotID, float x, float y, String loading) {
 		String gl = "(RobotInfo \"" + robotID + "\" " + x + " " + y + " \"" + loading + "\" \"" + System.currentTimeMillis() + "\")";
 //		System.out.println(gl);
 		ds.assertFact(gl);
 	}
 
-	private void sendCurrentRobotInfo(String robotID, int x, int y, String loading) {
+	private void sendCurrentRobotInfo(String robotID, float x, float y, String loading) {
 		String before = "(CurrentRobotInfo \"" + robotID + "\" $x $y $loading)";
 		String after = "(CurrentRobotInfo \"" + robotID + "\" " + x + " " + y + " \"" + loading + "\")";
 		String updateGL = "(update " + before + " " + after + ")";
@@ -87,13 +135,8 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	}
 
 	@Override
-	public void sendAckEnd(String actionType, String actionID) throws Exception {
-		throw new Exception();
-	}
-
-	@Override
-	public void sendAckEnd(String actionType, String actionID, String result) throws Exception {
-		throw new Exception();
+	public void sendMessageToTM(String message) throws Exception {
+		this.send(taskManagerURI, message);
 	}
 	
 	@Override

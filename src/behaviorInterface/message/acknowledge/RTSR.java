@@ -7,14 +7,14 @@ import behaviorInterface.mosInterface.mosValue.RobotStatus;
 public class RTSR extends AckMessage {
 	private RobotID robotID;
 	private RobotStatus robotStatus;
-	private int x;
-	private int y;
+	private float x;
+	private float y;
 	private int theta;
 	private int speed;
 	private int battery;
 	private boolean loading;
 	
-	public RTSR(RobotID robotID, RobotStatus robotStatus, int x, int y, int theta, int speed, int battery, boolean loading) {
+	public RTSR(RobotID robotID, RobotStatus robotStatus, float x, float y, int theta, int speed, int battery, boolean loading) {
 		this.messageType = MessageType.RTSR;
 		this.robotID = robotID;
 		this.robotStatus = robotStatus;
@@ -34,11 +34,11 @@ public class RTSR extends AckMessage {
 		return robotID;
 	}
 
-	public int getX() {
+	public float getX() {
 		return x;
 	}
 
-	public int getY() {
+	public float getY() {
 		return y;
 	}
 

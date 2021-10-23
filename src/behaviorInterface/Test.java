@@ -9,6 +9,7 @@ import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 
 public class Test {
 	private static class TestAgent extends ArbiAgent implements Runnable {
+		private final static String LocalBehaviorInterfaceURI = "agent://www.arbi.com/Local/BehaviorInterface";
 		private String behaviorInterfaceURI;
 		
 		private class MoveTask extends Thread {
@@ -65,6 +66,51 @@ public class Test {
 				System.out.println("response : " + request(behaviorInterfaceURI, reqMsg));
 			}
 		}
+	
+		private class LoadTask extends Thread {
+			private int nodeID;
+			
+			public LoadTask(int nodeID) {
+				this.nodeID = nodeID;
+				this.start();
+			}
+			
+			@Override
+			public void run() {
+				String reqMsg = "(doorOpen (actionID \"" + UUID.randomUUID().toString() + "\") " + this.nodeID + ")";
+				System.out.println("response : " + request(LocalBehaviorInterfaceURI, reqMsg));
+			}
+		}
+		
+		private class DoorOpenTask extends Thread {
+			private String doorID;
+			
+			public DoorOpenTask(String doorID) {
+				this.doorID = doorID;
+				this.start();
+			}
+			
+			@Override
+			public void run() {
+				String reqMsg = "(doorOpen (actionID \"" + UUID.randomUUID().toString() + "\") \"" + this.doorID + "\")";
+				System.out.println("response : " + request(LocalBehaviorInterfaceURI, reqMsg));
+			}
+		}
+		
+		private class DoorCloseTask extends Thread {
+			private String doorID;
+			
+			public DoorCloseTask(String doorID) {
+				this.doorID = doorID;
+				this.start();
+			}
+			
+			@Override
+			public void run() {
+				String reqMsg = "(doorClose (actionID \"" + UUID.randomUUID().toString() + "\") \"" + this.doorID + "\")";
+				System.out.println("response : " + request(LocalBehaviorInterfaceURI, reqMsg));
+			}
+		}
 			
 		public TestAgent(String brokerName) {
 			behaviorInterfaceURI = "agent://www.arbi.com/" + brokerName + "/BehaviorInterface";
@@ -85,23 +131,25 @@ public class Test {
 		@Override
 		public void run() {
 			try {
-				new MoveTask(201, 213, 205, 206);
+				new MoveTask(233, 234, 229);
+//				Thread.sleep(5000);
+//				new PauseTask();
+//				Thread.sleep(5000);
+//				new MoveTask(213, 205, 206);
+//				Thread.sleep(1000);
+//				new PauseTask();
+//				Thread.sleep(5000);
+//				new ResumeTask();
+//				Thread.sleep(5000);
+//				new PauseTask();
+//				Thread.sleep(5000);
+//				new ResumeTask();
+				Thread.sleep(10000);
+//				new DoorCloseTask("Door1");
+//				Thread.sleep(5000);
+				new DoorOpenTask("Door1");
 				Thread.sleep(5000);
-				new PauseTask();
-				Thread.sleep(5000);
-				new MoveTask(213, 205, 206);
-				Thread.sleep(1000);
-				new PauseTask();
-				Thread.sleep(5000);
-				new ResumeTask();
-				Thread.sleep(5000);
-				new PauseTask();
-				Thread.sleep(5000);
-				new ResumeTask();
-				Thread.sleep(5000);
-				new CancelMoveTask();
-				Thread.sleep(5000);
-				new MoveTask(206, 207, 208);
+				new LoadTask(23);
 				
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -112,6 +160,6 @@ public class Test {
 	}
 	
 	public static void main(String[] args) {
-		ArbiAgentExecutor.execute("tcp://127.0.0.1:61116", "agent://www.arbi.com/Lift1/TaskManager", new TestAgent("Lift1"), 2);
+		ArbiAgentExecutor.execute("tcp://127.0.0.1:61113", "agent://www.arbi.com/Tow2/TaskManager", new TestAgent("Tow2"), 2);
 	}
 }
