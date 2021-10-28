@@ -36,7 +36,7 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	@Override
 	public void onStart() {
 		try {
-			taskManagerURI = "agent://www.arbi.com/Local/BehaviorInterface";
+			taskManagerURI = "agent://www.arbi.com/Local/TaskManager";
 			String dataSourceURI = "ds://www.arbi.com/" + this.mcArbiID + "/BehaviorInterface";
 			ds = new DataSource();
 			ds.connect(brokerURL, dataSourceURI, 2);
@@ -146,12 +146,12 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	}
 	
 	public static void main(String[] args) {
-		String brokerURL = System.getenv("JMS_BROKER");
+		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
 		String mosURL = System.getenv("MOS");
 		String brokerName = System.getenv("AGENT");
-		brokerURL = "tcp://127.0.0.1:61316";
+//		brokerURL = "tcp://127.0.0.1:61316";
 		if(mosURL == null) {
-			mosURL = "127.0.0.1:30001";
+			mosURL = "192.168.0.11:30001";
 		}
 		if(brokerName == null) {
 			brokerName = "Local";

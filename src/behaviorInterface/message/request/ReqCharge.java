@@ -46,7 +46,7 @@ public class ReqCharge extends ReqMessage {
 			Expression id = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
 			Expression acionID = GLFactory.newExpression(GLFactory.newGL("actionID", id));
 			Expression actionResult;
-			int result = ((AckEndCancelMove) this.responseMessage).getResult();
+			int result = ((AckEndCharge) this.responseMessage).getResult();
 			if(result == 0) {
 				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
 			}

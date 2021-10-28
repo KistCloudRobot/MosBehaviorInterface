@@ -204,13 +204,13 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	}	
 	
 	public static void main(String[] args) {
-		String brokerURL = System.getenv("JMS_BROKER");
+		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
 		String mosURL = System.getenv("MOS");
 		String brokerName = System.getenv("AGENT");
 		String robotID = System.getenv("ROBOT");
-		brokerURL = "tcp://127.0.0.1:61116";
+//		brokerURL = "tcp://127.0.0.1:61116";
 		if(mosURL == null) {
-			mosURL = "127.0.0.1:30001";
+			mosURL = "192.168.0.11:30001";
 		}
 		if(brokerName == null) {
 			brokerName = "Lift1";
