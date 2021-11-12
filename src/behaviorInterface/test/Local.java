@@ -7,7 +7,7 @@ import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 public class Local {
 	public static void main(String[] args) {
 		String brokerURL = "tcp://127.0.0.1:61313";
-		String mosURL = "192.168.0.11:30001";
+		String mosURL = "127.0.0.1:30001";
 		String brokerName = "Local";
 		
 		String BehaviorInterfaceURI = "agent://www.arbi.com/" + brokerName + "/BehaviorInterface";

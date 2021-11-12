@@ -7,7 +7,7 @@ import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 public class Tow1 {
 	public static void main(String[] args) {
 		String brokerURL = "tcp://127.0.0.1:61114";
-		String mosURL = "192.168.0.11:30001";
+		String mosURL = "127.0.0.1:30001";
 		String brokerName = "Tow1";
 		String robotID = "AMR_TOW1";
 		

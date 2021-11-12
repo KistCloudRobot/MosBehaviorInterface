@@ -27,6 +27,9 @@ import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.MessageType;
 import behaviorInterface.mosInterface.mosValue.RobotID;
 import kr.ac.uos.ai.arbi.agent.ArbiAgent;
+import kr.ac.uos.ai.arbi.model.Expression;
+import kr.ac.uos.ai.arbi.model.GLFactory;
+import kr.ac.uos.ai.arbi.model.GeneralizedList;
 
 public class MosInterface {
 	RobotID robotID;
@@ -204,6 +207,13 @@ public class MosInterface {
 			this.waitingResponse = null;
 			this.currentActionType = null;
 			return response;
+		}
+		else if(this.currentActionType == null) {
+			Expression id = GLFactory.newExpression(GLFactory.newValue(actionID));
+			Expression acion = GLFactory.newExpression(GLFactory.newGL("actionID", id));
+			Expression actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
+			GeneralizedList gl = GLFactory.newGL(ActionType.cancelMove.toString(), acion, actionResult);
+			return gl.toString();
 		}
 		else {
 			return "(fail)";
