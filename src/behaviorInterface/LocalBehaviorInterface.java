@@ -73,7 +73,7 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	
 	@Override
 	public String onRequest(String sender, String request) {
-		System.out.println("on request : " + request.toString());
+		System.out.println("[request]\t: " + request.toString());
 		try {
 			GeneralizedList gl = GLFactory.newGLFromGLString(request);
 			ActionType actionType = ActionType.valueOf(gl.getName());
@@ -93,6 +93,8 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 				response = "(fail)";
 				break;
 			}
+			System.out.println("[response]\t: " + response);
+			System.out.println();
 			return response;
 		} 
 		catch (ParseException e) {
@@ -109,14 +111,8 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	
 	@Override
 	public void onRTSR(String robotID, String status, float x, float y, int theta, int speed, int battery, String loading) {
-		try {
-			sendRobotInfo(robotID, x, y, loading);
-			Thread.sleep(30);
-			sendCurrentRobotInfo(robotID, x, y, loading);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		sendRobotInfo(robotID, x, y, loading);
+		sendCurrentRobotInfo(robotID, x, y, loading);
 	}
 
 	private void sendRobotInfo(String robotID, float x, float y, String loading) {
@@ -136,6 +132,7 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 
 	@Override
 	public void sendMessageToTM(String message) throws Exception {
+		System.out.println("[sendTM]\t\t: " + message);
 		this.send(taskManagerURI, message);
 	}
 	

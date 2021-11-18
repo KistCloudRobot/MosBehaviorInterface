@@ -83,7 +83,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	
 	@Override
 	public String onRequest(String sender, String request) {
-		System.out.println("on request : " + request.toString());
+		System.out.println("[request]\t: " + request.toString());
 		try {
 			GeneralizedList gl = GLFactory.newGLFromGLString(request);
 			ActionType actionType = ActionType.valueOf(gl.getName());
@@ -131,7 +131,8 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 				response = "(fail)";
 				break;
 			}
-			System.out.println("response : " + response);
+			System.out.println("[response]\t: " + response);
+			System.out.println();
 			return response;
 		} 
 		catch (ParseException e) {

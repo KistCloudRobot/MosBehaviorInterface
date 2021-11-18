@@ -138,9 +138,9 @@ public class Adaptor extends Thread {
 //				sb.append("messageTypeID : " + messageTypeID + "\n");
 				MessageType messageType = MessageType.getEnum(messageTypeID);
 				sb.append("messageType : " + messageType + "\n");
-				if(messageType != MessageType.RTSR) {
-					System.out.println(sb.toString());
-				}
+//				if(messageType != MessageType.RTSR) {
+//					System.out.println(sb.toString());
+//				}
 				int packetSize = byteBuffer.getInt();
 				byte[] packetData = this.readByte(packetSize - HEADER_SIZE);
 				
@@ -219,6 +219,8 @@ public class Adaptor extends Thread {
 	}
 	
 	private void parseMessage(int protocolID, MessageType messageType, byte[] packetData) throws Exception {
+//		System.out.println("[onMsg]\t: " + messageType.toString());
+		
 		ByteBuffer byteBuffer = ByteBuffer.wrap(packetData).order(ByteOrder.LITTLE_ENDIAN);
 		int id = byteBuffer.getInt();
 
@@ -227,7 +229,7 @@ public class Adaptor extends Thread {
 		DoorID doorID;
 		RobotStatus robotStatus;
 		int result;
-		
+
 		if(isLocal) {
 			switch(messageType) {
 			case RTSR:
@@ -443,11 +445,10 @@ public class Adaptor extends Thread {
 			for(Integer i : reqMove.getPath()) {
 				bf.putInt(i);
 			}
-			System.out.print("move packet : ");
-			for(byte b : bf.array()) {
-				System.out.print(String.format("%02X ", b));
-			}
-			System.out.println();
+//			System.out.print("move packet : ");
+//			for(byte b : bf.array()) {
+//				System.out.print(String.format("%02X ", b));
+//			}
 			send(bf);
 			break;
 		case ReqCancelMove:

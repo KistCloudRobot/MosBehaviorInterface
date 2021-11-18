@@ -5,6 +5,7 @@ import java.util.List;
 
 import behaviorInterface.BehaviorInterface;
 import behaviorInterface.message.acknowledge.AckEndMessage;
+import behaviorInterface.message.acknowledge.AckEndMove;
 import behaviorInterface.message.acknowledge.AckMessage;
 import behaviorInterface.message.acknowledge.PersonCall;
 import behaviorInterface.message.acknowledge.RTSR;
@@ -90,12 +91,12 @@ public class MosInterface {
 		case AckPause:
 		case AckResume:
 		case AckLogin:
-			if(this.robotID == null) {
-				System.out.println("[LOCAL] " + messageType);
-			}
-			else {
-				System.out.println("[" + robotID.toString() + "] " + messageType);
-			}
+//			if(this.robotID == null) {
+//				System.out.println("[LOCAL] " + messageType);
+//			}
+//			else {
+//				System.out.println("[" + robotID.toString() + "] " + messageType);
+//			}
 			break;
 		case AckLoad:
 		case AckUnload:
@@ -107,12 +108,12 @@ public class MosInterface {
 		case AckEndCancelMove:
 		case AckEndPause:
 		case AckEndResume:
-			if(this.robotID == null) {
-				System.out.println("[LOCAL] " + messageType);
-			}
-			else {
-				System.out.println("[" + robotID.toString() + "] " + messageType);
-			}
+//			if(this.robotID == null) {
+//				System.out.println("[LOCAL] " + messageType);
+//			}
+//			else {
+//				System.out.println("[" + robotID.toString() + "] " + messageType);
+//			}
 			this.waitingResponse.setResponse(message);
 			break;
 		case AckEndLoad:
@@ -121,12 +122,13 @@ public class MosInterface {
 		case AckEndChargeStop:
 		case AckEndDoorOpen:
 		case AckEndDoorClose:
-			if(this.robotID == null) {
-				System.out.println("[LOCAL] " + messageType);
-			}
-			else {
-				System.out.println("[" + robotID.toString() + "] " + messageType);
-			}
+			System.out.println("here2");
+//			if(this.robotID == null) {
+//				System.out.println("[LOCAL] " + messageType);
+//			}
+//			else {
+//				System.out.println("[" + robotID.toString() + "] " + messageType);
+//			}
 			ackEndMessage = (AckEndMessage)message;
 			resultValue = ackEndMessage.getResult();
 			result = this.getResult(resultValue);
@@ -200,12 +202,22 @@ public class MosInterface {
 	
 	public String cancelMove(String actionID) throws Exception {
 		if(this.isLogin && this.currentActionType == ActionType.move) {
+			this.pausedWaitingResponse = this.waitingResponse;
 			this.waitingResponse = new ReqCancelMove(actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
 			String response = this.waitingResponse.getResponse();
 			this.waitingResponse = null;
 			this.currentActionType = null;
+			if(response.contains("fail")) {
+				this.waitingResponse = this.pausedWaitingResponse;
+				this.pausedWaitingResponse = null;
+			}
+			else {
+				System.out.println("here");
+				this.pausedWaitingResponse.setResponse(new AckEndMove(this.robotID.getValue(), 1));
+				this.pausedWaitingResponse = null;
+			}
 			return response;
 		}
 		else if(this.currentActionType == null) {

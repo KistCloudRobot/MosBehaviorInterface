@@ -6,7 +6,7 @@ import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 
 public class Lift1 {
 	public static void main(String[] args) {
-		String brokerURL = "tcp://127.0.0.1:61116";
+		String brokerURL = "tcp://172.16.165.171:61116";
 		String mosURL = "127.0.0.1:30001";
 		String brokerName = "Lift1";
 		String robotID = "AMR_LIFT1";
