@@ -1,8 +1,7 @@
 package behaviorInterface.message.request;
 
-import behaviorInterface.message.acknowledge.AckEndCancelMove;
-import behaviorInterface.message.acknowledge.AckEndUnload;
-import behaviorInterface.message.acknowledge.AckUnload;
+import behaviorInterface.message.acknowledge.AckEndPreciseMove;
+import behaviorInterface.message.acknowledge.AckPreciseMove;
 import behaviorInterface.mosInterface.mosValue.ActionType;
 import behaviorInterface.mosInterface.mosValue.MessageType;
 import behaviorInterface.mosInterface.mosValue.RobotID;
@@ -10,17 +9,17 @@ import kr.ac.uos.ai.arbi.model.Expression;
 import kr.ac.uos.ai.arbi.model.GLFactory;
 import kr.ac.uos.ai.arbi.model.GeneralizedList;
 
-public class ReqUnload extends ReqMessage {
+public class ReqPreciseMove extends ReqMessage {
 	private RobotID robotID;
 	private int nodeID;
 	
-	public ReqUnload(String sender, String actionID, int robotID, int nodeID) {
+	public ReqPreciseMove(String sender, String actionID, int robotID, int nodeID) {
 		this(sender, actionID, RobotID.getEnum(robotID), nodeID);
 	}
 	
-	public ReqUnload(String sender, String actionID, RobotID robotID, int nodeID) {
+	public ReqPreciseMove(String sender, String actionID, RobotID robotID, int nodeID) {
 		super(sender, actionID);
-		this.messageType = MessageType.ReqUnload;
+		this.messageType = MessageType.ReqPreciseMove;
 		this.robotID = robotID;
 		this.nodeID = nodeID;
 	}
@@ -28,25 +27,25 @@ public class ReqUnload extends ReqMessage {
 	public RobotID getRobotID() {
 		return robotID;
 	}
-
+	
 	public int getNodeID() {
-		return nodeID;
+		return this.nodeID;
 	}
 	
 	public ActionType getActionType() {
-		return ActionType.unload;
+		return ActionType.preciseMove;
 	}
 	
 	public String makeResponse() {
 		String response = null;
-		if(this.responseMessage instanceof AckUnload) {
+		if(this.responseMessage instanceof AckPreciseMove) {
 			response = "(ok)";
 		}
-		if(this.responseMessage instanceof AckEndUnload) {
+		else if(this.responseMessage instanceof AckEndPreciseMove) {
 			Expression id = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
 			Expression acionID = GLFactory.newExpression(GLFactory.newGL("actionID", id));
 			Expression actionResult;
-			int result = ((AckEndUnload) this.responseMessage).getResult();
+			int result = ((AckEndPreciseMove) this.responseMessage).getResult();
 			if(result == 0) {
 				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
 			}

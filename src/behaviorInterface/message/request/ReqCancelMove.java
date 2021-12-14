@@ -1,5 +1,6 @@
 package behaviorInterface.message.request;
 
+import behaviorInterface.message.acknowledge.AckCancelMove;
 import behaviorInterface.message.acknowledge.AckEndCancelMove;
 import behaviorInterface.mosInterface.mosValue.ActionType;
 import behaviorInterface.mosInterface.mosValue.MessageType;
@@ -11,12 +12,12 @@ import kr.ac.uos.ai.arbi.model.GeneralizedList;
 public class ReqCancelMove extends ReqMessage {
 	private RobotID robotID;
 	
-	public ReqCancelMove(String actionID, int robotID) {
-		this(actionID, RobotID.getEnum(robotID));
+	public ReqCancelMove(String sender, String actionID, int robotID) {
+		this(sender, actionID, RobotID.getEnum(robotID));
 	}
 	
-	public ReqCancelMove(String actionID, RobotID robotID) {
-		super(actionID);
+	public ReqCancelMove(String sender, String actionID, RobotID robotID) {
+		super(sender, actionID);
 		this.messageType = MessageType.ReqCancelMove;
 		this.robotID = robotID;
 	}
@@ -31,7 +32,10 @@ public class ReqCancelMove extends ReqMessage {
 	
 	public String makeResponse() {
 		String response = null;
-		if(this.responseMessage instanceof AckEndCancelMove) {
+		if(this.responseMessage instanceof AckCancelMove) {
+			response = "(ok)";
+		}
+		else if(this.responseMessage instanceof AckEndCancelMove) {
 			Expression id = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
 			Expression acionID = GLFactory.newExpression(GLFactory.newGL("actionID", id));
 			Expression actionResult;

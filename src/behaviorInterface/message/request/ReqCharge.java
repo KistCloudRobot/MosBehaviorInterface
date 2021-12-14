@@ -14,12 +14,12 @@ public class ReqCharge extends ReqMessage {
 	private RobotID robotID;
 	private int nodeID;
 	
-	public ReqCharge(String actionID, int robotID, int nodeID) {
-		this(actionID, RobotID.getEnum(robotID), nodeID);
+	public ReqCharge(String sender, String actionID, int robotID, int nodeID) {
+		this(sender, actionID, RobotID.getEnum(robotID), nodeID);
 	}
 	
-	public ReqCharge(String actionID, RobotID robotID, int nodeID) {
-		super(actionID);
+	public ReqCharge(String sender, String actionID, RobotID robotID, int nodeID) {
+		super(sender, actionID);
 		this.messageType = MessageType.ReqCharge;
 		this.robotID = robotID;
 		this.nodeID = nodeID;

@@ -7,18 +7,17 @@ import java.util.concurrent.locks.ReentrantLock;
 import behaviorInterface.message.BehaviorInterfaceMessage;
 import behaviorInterface.message.acknowledge.AckMessage;
 import behaviorInterface.mosInterface.mosValue.ActionType;
-import kr.ac.uos.ai.arbi.model.Expression;
-import kr.ac.uos.ai.arbi.model.GLFactory;
-import kr.ac.uos.ai.arbi.model.GeneralizedList;
 
 public abstract class ReqMessage extends BehaviorInterfaceMessage {
+	private String sender;
 	private String actionID;
 	protected AckMessage responseMessage;
 
 	private final ResponseLock responceLock;
 
-	public ReqMessage(String actionID) {
+	public ReqMessage(String sender, String actionID) {
 		responceLock = new ResponseLock();
+		this.sender = sender;
 		this.actionID = actionID;
 	}
 	
@@ -54,14 +53,6 @@ public abstract class ReqMessage extends BehaviorInterfaceMessage {
 			responceLock.unlock();
 		}
 	}
-
-	public String makeResponseMessage(String result) {
-		Expression id = GLFactory.newExpression(GLFactory.newValue(this.actionID));
-		Expression acion = GLFactory.newExpression(GLFactory.newGL("actionID", id));
-		Expression actionResult = GLFactory.newExpression(GLFactory.newValue(result));
-		GeneralizedList gl = GLFactory.newGL(this.getActionType().toString(), acion, actionResult);
-		return gl.toString();
-	}
 	
 	abstract public String makeResponse();
 	
@@ -96,6 +87,10 @@ public abstract class ReqMessage extends BehaviorInterfaceMessage {
 	
 	public String getActionID() {
 		return this.actionID;
+	}
+	
+	public String getSender() {
+		return this.sender;
 	}
 	
 	public abstract ActionType getActionType();

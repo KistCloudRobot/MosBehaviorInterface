@@ -9,7 +9,7 @@ public class ReqLogin extends ReqMessage {
 	private LoginID mcArbiID;
 	
 	public ReqLogin(LoginID mcArbiID) {
-		super(null);
+		super(null, null);
 		this.messageType = MessageType.ReqLogin;
 		this.mcArbiID = mcArbiID;
 	}

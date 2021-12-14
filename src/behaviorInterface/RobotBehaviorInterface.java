@@ -2,21 +2,14 @@ package behaviorInterface;
 
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.ActionType;
 import behaviorInterface.mosInterface.mosValue.LoginID;
-import behaviorInterface.mosInterface.mosValue.RobotID;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 import kr.ac.uos.ai.arbi.ltm.DataSource;
-import kr.ac.uos.ai.arbi.model.Expression;
 import kr.ac.uos.ai.arbi.model.GLFactory;
 import kr.ac.uos.ai.arbi.model.GeneralizedList;
 import kr.ac.uos.ai.arbi.model.parser.ParseException;
@@ -30,15 +23,11 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	private final String mosURL;
 	private final String robotID;
 	
-	private final String taskManagerURI;
-	
 	public RobotBehaviorInterface(String brokerURL, String mcArbiID, String mosURL, String robotID) {
 		this.brokerURL = brokerURL;
 		this.mcArbiID = mcArbiID;
 		this.mosURL = mosURL;
 		this.robotID = robotID;
-		
-		this.taskManagerURI = "agent://www.arbi.com/" + this.mcArbiID + "/TaskManager";
 	}
 	
 	@Override
@@ -89,9 +78,8 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 			ActionType actionType = ActionType.valueOf(gl.getName());
 			String actionID = gl.getExpression(0).asGeneralizedList().getExpression(0).asValue().stringValue();
 			int nodeID = 0;
-			String doorID = null;
+			int direction = 0;
 			String response = null;
-			System.out.println("[" + robotID.toString() + "] " + actionType);
 			switch(actionType) {
 			case move:
 				GeneralizedList pathGL = gl.getExpression(1).asGeneralizedList();
@@ -100,32 +88,45 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 				for(int i = 0; i < pathSize; i++) {
 					path.add(pathGL.getExpression(i).asValue().intValue());
 				}
-				response = this.mi.move(actionID, pathSize, path);
+				response = this.mi.move(sender, actionID, pathSize, path);
 				break;
 			case cancelMove:
-				response = this.mi.cancelMove(actionID);
+				response = this.mi.cancelMove(sender, actionID);
 				break;
 			case load:
 				nodeID = gl.getExpression(1).asValue().intValue();
-				response = this.mi.load(actionID, nodeID);
+				response = this.mi.load(sender, actionID, nodeID);
 				break;
 			case unload:
 				nodeID = gl.getExpression(1).asValue().intValue();
-				response = this.mi.unload(actionID, nodeID);
+				response = this.mi.unload(sender, actionID, nodeID);
 				break;
 			case charge:
 				nodeID = gl.getExpression(1).asValue().intValue();
-				response = this.mi.charge(actionID, nodeID);
+				response = this.mi.charge(sender, actionID, nodeID);
 				break;
 			case chargeStop:
 				nodeID = gl.getExpression(1).asValue().intValue();
-				response = this.mi.chargeStop(actionID, nodeID);
+				response = this.mi.chargeStop(sender, actionID, nodeID);
 				break;
 			case pause:
-				response = this.mi.pause(actionID);
+				response = this.mi.pause(sender, actionID);
 				break;
 			case resume:
-				response = this.mi.resume(actionID);
+				response = this.mi.resume(sender, actionID);
+				break;
+			case guideMove:
+				nodeID = gl.getExpression(1).asValue().intValue();
+				direction = gl.getExpression(2).asValue().intValue();
+				response = this.mi.guideMove(sender, actionID, nodeID, direction);
+				break;
+			case preciseMove:
+				nodeID = gl.getExpression(1).asValue().intValue();
+				response = this.mi.preciseMove(sender, actionID, nodeID);
+				break;
+			case straightBackMove:
+				nodeID = gl.getExpression(1).asValue().intValue();
+				response = this.mi.straightBackMove(sender, actionID, nodeID);
 				break;
 			default:
 				response = "(fail)";
@@ -192,12 +193,6 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		String updateGL = "(update " + before + " " + after + ")";
 //		System.out.println(updateGL);
 		ds.updateFact(updateGL);
-	}
-	
-	@Override
-	public void sendMessageToTM(String message) throws Exception {
-		System.out.println("send : " + message);
-		this.send(taskManagerURI, message);
 	}
 	
 	public void sendPersonCall(int locationID, int cmdID) {

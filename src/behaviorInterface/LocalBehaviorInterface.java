@@ -1,17 +1,12 @@
 package behaviorInterface;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.LinkedList;
-import java.util.List;
 
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.ActionType;
 import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.RobotID;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
-import kr.ac.uos.ai.arbi.framework.ArbiFrameworkServer;
 import kr.ac.uos.ai.arbi.ltm.DataSource;
 import kr.ac.uos.ai.arbi.model.GLFactory;
 import kr.ac.uos.ai.arbi.model.GeneralizedList;
@@ -24,8 +19,6 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	private String brokerURL;
 	private String mcArbiID;
 	private String mosURL;
-
-	private String taskManagerURI;
 	
 	public LocalBehaviorInterface(String brokerURL, String mcArbiID, String mosURL) {
 		this.brokerURL = brokerURL;
@@ -36,7 +29,6 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	@Override
 	public void onStart() {
 		try {
-			taskManagerURI = "agent://www.arbi.com/Local/TaskManager";
 			String dataSourceURI = "ds://www.arbi.com/" + this.mcArbiID + "/BehaviorInterface";
 			ds = new DataSource();
 			ds.connect(brokerURL, dataSourceURI, 2);
@@ -83,11 +75,11 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 			switch(actionType) {
 			case doorOpen:
 				doorID = gl.getExpression(1).asValue().stringValue();
-				response = this.mi.doorOpen(actionID, doorID);
+				response = this.mi.doorOpen(sender, actionID, doorID);
 				break;
 			case doorClose:
 				doorID = gl.getExpression(1).asValue().stringValue();
-				response = this.mi.doorClose(actionID, doorID);
+				response = this.mi.doorClose(sender, actionID, doorID);
 				break;
 			default:
 				response = "(fail)";
@@ -128,12 +120,6 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 //		System.out.println(updateGL);
 		ds.updateFact(updateGL);
 		
-	}
-
-	@Override
-	public void sendMessageToTM(String message) throws Exception {
-		System.out.println("[sendTM]\t\t: " + message);
-		this.send(taskManagerURI, message);
 	}
 	
 	@Override

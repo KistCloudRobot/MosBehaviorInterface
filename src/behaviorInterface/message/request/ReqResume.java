@@ -12,12 +12,12 @@ import kr.ac.uos.ai.arbi.model.GeneralizedList;
 public class ReqResume extends ReqMessage {
 	private RobotID robotID;
 	
-	public ReqResume(String actionID, int robotID) {
-		this(actionID, RobotID.getEnum(robotID));
+	public ReqResume(String sender, String actionID, int robotID) {
+		this(sender, actionID, RobotID.getEnum(robotID));
 	}
 	
-	public ReqResume(String actionID, RobotID robotID) {
-		super(actionID);
+	public ReqResume(String sender, String actionID, RobotID robotID) {
+		super(sender, actionID);
 		this.messageType = MessageType.ReqResume;
 		this.robotID = robotID;
 	}

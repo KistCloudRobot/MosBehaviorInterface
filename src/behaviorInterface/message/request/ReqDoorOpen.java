@@ -13,12 +13,12 @@ import kr.ac.uos.ai.arbi.model.GeneralizedList;
 public class ReqDoorOpen extends ReqMessage {
 	private DoorID doorID;
 	
-	public ReqDoorOpen(String actionID, int doorID) {
-		this(actionID, DoorID.getEnum(doorID));
+	public ReqDoorOpen(String sender, String actionID, int doorID) {
+		this(sender, actionID, DoorID.getEnum(doorID));
 	}
 	
-	public ReqDoorOpen(String actionID, DoorID doorID) {
-		super(actionID);
+	public ReqDoorOpen(String sender, String actionID, DoorID doorID) {
+		super(sender, actionID);
 		this.messageType = MessageType.ReqDoorOpen;
 		this.doorID = doorID;
 	}

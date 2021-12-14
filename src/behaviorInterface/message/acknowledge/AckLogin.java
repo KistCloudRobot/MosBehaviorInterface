@@ -2,7 +2,6 @@ package behaviorInterface.message.acknowledge;
 
 import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.MessageType;
-import behaviorInterface.mosInterface.mosValue.RobotID;
 
 public class AckLogin extends AckMessage {
 	private LoginID mcArbiID;

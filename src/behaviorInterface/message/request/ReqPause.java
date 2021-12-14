@@ -12,12 +12,12 @@ import kr.ac.uos.ai.arbi.model.GeneralizedList;
 public class ReqPause extends ReqMessage {
 	private RobotID robotID;
 	
-	public ReqPause(String actionID, int robotID) {
-		this(actionID, RobotID.getEnum(robotID));
+	public ReqPause(String sender, String actionID, int robotID) {
+		this(sender, actionID, RobotID.getEnum(robotID));
 	}
 	
-	public ReqPause(String actionID, RobotID robotID) {
-		super(actionID);
+	public ReqPause(String sender, String actionID, RobotID robotID) {
+		super(sender, actionID);
 		this.messageType = MessageType.ReqPause;
 		this.robotID = robotID;
 	}

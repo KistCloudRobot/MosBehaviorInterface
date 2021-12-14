@@ -131,7 +131,7 @@ public class Test {
 		@Override
 		public void run() {
 			try {
-				new MoveTask(233, 234, 229);
+				new MoveTask(204, 232, 230);
 //				Thread.sleep(5000);
 //				new PauseTask();
 //				Thread.sleep(5000);
@@ -144,14 +144,13 @@ public class Test {
 //				new PauseTask();
 //				Thread.sleep(5000);
 //				new ResumeTask();
-				Thread.sleep(10000);
+//				Thread.sleep(10000);
 //				new DoorCloseTask("Door1");
 //				Thread.sleep(5000);
-				new DoorOpenTask("Door1");
-				Thread.sleep(5000);
-				new LoadTask(23);
+//				Thread.sleep(5000);
+//				new LoadTask(23);
 				
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -160,6 +159,6 @@ public class Test {
 	}
 	
 	public static void main(String[] args) {
-		ArbiAgentExecutor.execute("tcp://127.0.0.1:61113", "agent://www.arbi.com/Tow2/TaskManager", new TestAgent("Tow2"), 2);
+		ArbiAgentExecutor.execute("tcp://172.16.165.171:61412", "agent://www.arbi.com/Tow2/TaskManager", new TestAgent("Tow2"), 2);
 	}
 }

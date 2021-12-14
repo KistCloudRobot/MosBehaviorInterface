@@ -20,18 +20,24 @@ import behaviorInterface.message.acknowledge.AckEndCharge;
 import behaviorInterface.message.acknowledge.AckEndChargeStop;
 import behaviorInterface.message.acknowledge.AckEndDoorClose;
 import behaviorInterface.message.acknowledge.AckEndDoorOpen;
+import behaviorInterface.message.acknowledge.AckEndGuideMove;
 import behaviorInterface.message.acknowledge.AckEndLoad;
 import behaviorInterface.message.acknowledge.AckEndLogin;
 import behaviorInterface.message.acknowledge.AckEndMove;
 import behaviorInterface.message.acknowledge.AckEndPause;
+import behaviorInterface.message.acknowledge.AckEndPreciseMove;
 import behaviorInterface.message.acknowledge.AckEndResume;
+import behaviorInterface.message.acknowledge.AckEndStraightBackMove;
 import behaviorInterface.message.acknowledge.AckEndUnload;
+import behaviorInterface.message.acknowledge.AckGuideMove;
 import behaviorInterface.message.acknowledge.AckLoad;
 import behaviorInterface.message.acknowledge.AckLogin;
 import behaviorInterface.message.acknowledge.AckMessage;
 import behaviorInterface.message.acknowledge.AckMove;
 import behaviorInterface.message.acknowledge.AckPause;
+import behaviorInterface.message.acknowledge.AckPreciseMove;
 import behaviorInterface.message.acknowledge.AckResume;
+import behaviorInterface.message.acknowledge.AckStraightBackMove;
 import behaviorInterface.message.acknowledge.AckUnload;
 import behaviorInterface.message.acknowledge.PersonCall;
 import behaviorInterface.message.acknowledge.RTSR;
@@ -40,10 +46,13 @@ import behaviorInterface.message.request.ReqCharge;
 import behaviorInterface.message.request.ReqChargeStop;
 import behaviorInterface.message.request.ReqDoorClose;
 import behaviorInterface.message.request.ReqDoorOpen;
+import behaviorInterface.message.request.ReqGuideMove;
 import behaviorInterface.message.request.ReqLoad;
 import behaviorInterface.message.request.ReqLogin;
 import behaviorInterface.message.request.ReqMessage;
 import behaviorInterface.message.request.ReqMove;
+import behaviorInterface.message.request.ReqPreciseMove;
+import behaviorInterface.message.request.ReqStraightBackMove;
 import behaviorInterface.message.request.ReqUnload;
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.DoorID;
@@ -199,6 +208,12 @@ public class Adaptor extends Thread {
 			case AckEndPause:
 			case AckResume:
 			case AckEndResume:
+			case AckGuideMove:
+			case AckEndGuideMove:
+			case AckPreciseMove:
+			case AckEndPreciseMove:
+			case AckStraightBackMove:
+			case AckEndStraightBackMove:
 				RobotID robotID = RobotID.getEnum(id);
 				return robotID == null ? false : this.robotID.equals(robotID);
 			case AckDoorOpen:
@@ -398,6 +413,39 @@ public class Adaptor extends Thread {
 				ackMessage = new AckEndLogin(LoginID.getEnum(id), result);
 				this.mi.onMessage(ackMessage);
 				break;
+			case AckGuideMove:
+				robotID = RobotID.getEnum(id);
+				ackMessage = new AckGuideMove(robotID);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckEndGuideMove:
+				robotID = RobotID.getEnum(id);
+				result = byteBuffer.getInt();
+				ackMessage = new AckEndGuideMove(robotID, result);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckPreciseMove:
+				robotID = RobotID.getEnum(id);
+				ackMessage = new AckPreciseMove(robotID);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckEndPreciseMove:
+				robotID = RobotID.getEnum(id);
+				result = byteBuffer.getInt();
+				ackMessage = new AckEndPreciseMove(robotID, result);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckStraightBackMove:
+				robotID = RobotID.getEnum(id);
+				ackMessage = new AckStraightBackMove(robotID);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckEndStraightBackMove:
+				robotID = RobotID.getEnum(id);
+				result = byteBuffer.getInt();
+				ackMessage = new AckEndStraightBackMove(robotID, result);
+				this.mi.onMessage(ackMessage);
+				break;
 			default:
 				break;
 			}
@@ -428,6 +476,7 @@ public class Adaptor extends Thread {
 		ByteBuffer bf;
 		int packetSize;
 		int nodeID;
+		int direction;
 		DoorID doorID;
 		
 		switch(messageType) {
@@ -567,6 +616,47 @@ public class Adaptor extends Thread {
 			bf.putInt(messageType.getValue());
 			bf.putInt(packetSize);
 			bf.putInt(reqLogin.getLoginID().getValue());
+			send(bf);
+			break;
+		case ReqGuideMove:
+			ReqGuideMove reqGuideMove = (ReqGuideMove)message;
+			packetSize = 24;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(robotID.getValue());
+			nodeID = reqGuideMove.getNodeID();
+			bf.putInt(nodeID);
+			direction = reqGuideMove.getDirection().getValue();
+			bf.putInt(direction);
+			send(bf);
+			break;
+		case ReqPreciseMove:
+			ReqPreciseMove reqPreciseMove = (ReqPreciseMove)message;
+			packetSize = 20;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(robotID.getValue());
+			nodeID = reqPreciseMove.getNodeID();
+			bf.putInt(nodeID);
+			send(bf);
+			break;
+		case ReqStraightBackMove:
+			ReqStraightBackMove reqStraightBackMove = (ReqStraightBackMove)message;
+			packetSize = 20;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(robotID.getValue());
+			nodeID = reqStraightBackMove.getNodeID();
+			bf.putInt(nodeID);
 			send(bf);
 			break;
 		default:

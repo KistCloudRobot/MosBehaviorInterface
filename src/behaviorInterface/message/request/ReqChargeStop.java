@@ -14,12 +14,12 @@ public class ReqChargeStop extends ReqMessage {
 	private RobotID robotID;
 	private int nodeID;
 	
-	public ReqChargeStop(String actionID, int robotID, int nodeID) {
-		this(actionID, RobotID.getEnum(robotID), nodeID);
+	public ReqChargeStop(String sender, String actionID, int robotID, int nodeID) {
+		this(sender, actionID, RobotID.getEnum(robotID), nodeID);
 	}
 	
-	public ReqChargeStop(String actionID, RobotID robotID, int nodeID) {
-		super(actionID);
+	public ReqChargeStop(String sender, String actionID, RobotID robotID, int nodeID) {
+		super(sender, actionID);
 		this.messageType = MessageType.ReqChargeStop;
 		this.robotID = robotID;
 		this.nodeID = nodeID;

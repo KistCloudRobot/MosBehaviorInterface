@@ -2,8 +2,9 @@ package behaviorInterface.message.request;
 
 import java.util.List;
 
-import behaviorInterface.message.acknowledge.AckEndCancelMove;
 import behaviorInterface.message.acknowledge.AckEndMove;
+import behaviorInterface.message.acknowledge.AckLoad;
+import behaviorInterface.message.acknowledge.AckMove;
 import behaviorInterface.mosInterface.mosValue.ActionType;
 import behaviorInterface.mosInterface.mosValue.MessageType;
 import behaviorInterface.mosInterface.mosValue.RobotID;
@@ -16,12 +17,12 @@ public class ReqMove extends ReqMessage {
 	private int pathSize;
 	private List<Integer> path;
 	
-	public ReqMove(String actionID, int robotID, int pathSize, List<Integer> path) {
-		this(actionID, RobotID.getEnum(robotID), pathSize, path);
+	public ReqMove(String sender, String actionID, int robotID, int pathSize, List<Integer> path) {
+		this(sender, actionID, RobotID.getEnum(robotID), pathSize, path);
 	}
 	
-	public ReqMove(String actionID, RobotID robotID, int pathSize, List<Integer> path) {
-		super(actionID);
+	public ReqMove(String sender, String actionID, RobotID robotID, int pathSize, List<Integer> path) {
+		super(sender, actionID);
 		this.messageType = MessageType.ReqMove;
 		this.robotID = robotID;
 		this.pathSize = pathSize;
@@ -50,7 +51,10 @@ public class ReqMove extends ReqMessage {
 	
 	public String makeResponse() {
 		String response = null;
-		if(this.responseMessage instanceof AckEndMove) {
+		if(this.responseMessage instanceof AckMove) {
+			response = "(ok)";
+		}
+		else if(this.responseMessage instanceof AckEndMove) {
 			Expression id = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
 			Expression acionID = GLFactory.newExpression(GLFactory.newGL("actionID", id));
 			Expression actionResult;
