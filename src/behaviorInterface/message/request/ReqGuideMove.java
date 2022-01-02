@@ -15,16 +15,16 @@ public class ReqGuideMove extends ReqMessage {
 	private int nodeID;
 	private Direction direction;
 	
-	public ReqGuideMove(String sender, String actionID, int robotID, int nodeID, int direction) {
-		this(sender, actionID, RobotID.getEnum(robotID), nodeID, Direction.getEnum(direction));
+	public ReqGuideMove(String sender, String actionID, int robotID, int nodeID, String direction) {
+		this(sender, actionID, RobotID.getEnum(robotID), nodeID, Direction.valueOf(direction));
 	}
 	
 	public ReqGuideMove(String sender, String actionID, int robotID, int nodeID, Direction direction) {
 		this(sender, actionID, RobotID.getEnum(robotID), nodeID, direction);
 	}
 	
-	public ReqGuideMove(String sender, String actionID, RobotID robotID, int nodeID, int direction) {
-		this(sender, actionID, robotID, nodeID, Direction.getEnum(direction));
+	public ReqGuideMove(String sender, String actionID, RobotID robotID, int nodeID, String direction) {
+		this(sender, actionID, robotID, nodeID, Direction.valueOf(direction));
 	}
 	
 	public ReqGuideMove(String sender, String actionID, RobotID robotID, int nodeID, Direction direction) {

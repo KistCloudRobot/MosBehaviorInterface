@@ -63,7 +63,7 @@ public class ReqMove extends ReqMessage {
 				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
 			}
 			else {
-				actionResult = GLFactory.newExpression(GLFactory.newValue("fail"));
+				actionResult = GLFactory.newExpression(GLFactory.newValue("fail " + result));
 			}
 			
 			GeneralizedList gl = GLFactory.newGL(this.getActionType().toString(), acionID, actionResult);

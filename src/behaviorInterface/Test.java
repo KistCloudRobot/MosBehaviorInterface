@@ -131,8 +131,10 @@ public class Test {
 		@Override
 		public void run() {
 			try {
-				new MoveTask(204, 232, 230);
-//				Thread.sleep(5000);
+				new MoveTask(219, 220);
+				Thread.sleep(1000);
+				new CancelMoveTask();
+				Thread.sleep(5000);
 //				new PauseTask();
 //				Thread.sleep(5000);
 //				new MoveTask(213, 205, 206);
@@ -159,6 +161,6 @@ public class Test {
 	}
 	
 	public static void main(String[] args) {
-		ArbiAgentExecutor.execute("tcp://172.16.165.171:61412", "agent://www.arbi.com/Tow2/TaskManager", new TestAgent("Tow2"), 2);
+		ArbiAgentExecutor.execute("tcp://172.16.165.106:61116", "agent://www.arbi.com/Tow2/TaskManager", new TestAgent("Lift1"), 2);
 	}
 }

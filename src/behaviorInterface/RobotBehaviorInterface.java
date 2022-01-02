@@ -78,7 +78,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 			ActionType actionType = ActionType.valueOf(gl.getName());
 			String actionID = gl.getExpression(0).asGeneralizedList().getExpression(0).asValue().stringValue();
 			int nodeID = 0;
-			int direction = 0;
+			String direction = null;
 			String response = null;
 			switch(actionType) {
 			case move:
@@ -117,7 +117,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 				break;
 			case guideMove:
 				nodeID = gl.getExpression(1).asValue().intValue();
-				direction = gl.getExpression(2).asValue().intValue();
+				direction = gl.getExpression(2).asValue().stringValue();
 				response = this.mi.guideMove(sender, actionID, nodeID, direction);
 				break;
 			case preciseMove:

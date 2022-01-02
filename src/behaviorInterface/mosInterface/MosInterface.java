@@ -321,7 +321,7 @@ public class MosInterface {
 		}
 	}
 	
-	public String guideMove(String sender, String actionID, int nodeID, int direction) throws Exception {
+	public String guideMove(String sender, String actionID, int nodeID, String direction) throws Exception {
 		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
 			this.waitingResponse = new ReqGuideMove(sender, actionID, this.robotID, nodeID, direction);
 			this.currentActionType = this.waitingResponse.getActionType();

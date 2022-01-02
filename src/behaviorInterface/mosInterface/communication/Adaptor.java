@@ -629,6 +629,8 @@ public class Adaptor extends Thread {
 			bf.putInt(robotID.getValue());
 			nodeID = reqGuideMove.getNodeID();
 			bf.putInt(nodeID);
+			System.out.println(reqGuideMove.getDirection());
+			System.out.println(reqGuideMove.getDirection().getValue());
 			direction = reqGuideMove.getDirection().getValue();
 			bf.putInt(direction);
 			send(bf);
