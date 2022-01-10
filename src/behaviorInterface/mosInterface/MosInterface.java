@@ -190,7 +190,7 @@ public class MosInterface {
 	}
 	
 	public String cancelMove(String sender, String actionID) throws Exception {
-		if(this.isLogin && this.currentActionType == ActionType.move) {
+		if(this.isLogin) {
 			this.pausedWaitingResponse = this.waitingResponse;
 			this.waitingResponse = new ReqCancelMove(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
@@ -201,18 +201,20 @@ public class MosInterface {
 				this.pausedWaitingResponse = null;
 			}
 			else {
-				this.pausedWaitingResponse.setResponse(new AckEndMove(this.robotID.getValue(), 1));
-				this.pausedWaitingResponse = null;
+				if(this.pausedWaitingResponse != null) {
+					this.pausedWaitingResponse.setResponse(new AckEndMove(this.robotID.getValue(), 1));
+					this.pausedWaitingResponse = null;
+				}
 			}
 			return response;
 		}
-		else if(this.currentActionType == null) {
-			Expression id = GLFactory.newExpression(GLFactory.newValue(actionID));
-			Expression acion = GLFactory.newExpression(GLFactory.newGL("actionID", id));
-			Expression actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
-			GeneralizedList gl = GLFactory.newGL(ActionType.cancelMove.toString(), acion, actionResult);
-			return gl.toString();
-		}
+//		else if(this.currentActionType == null) {
+//			Expression id = GLFactory.newExpression(GLFactory.newValue(actionID));
+//			Expression acion = GLFactory.newExpression(GLFactory.newGL("actionID", id));
+//			Expression actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
+//			GeneralizedList gl = GLFactory.newGL(ActionType.cancelMove.toString(), acion, actionResult);
+//			return gl.toString();
+//		}
 		else {
 			return "(fail (actionID \"" + actionID + "\"))";
 		}
