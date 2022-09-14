@@ -1,13 +1,13 @@
 package behaviorInterface.mosInterface.mosValue;
 
 public enum ActionType {
-	move, cancelMove, 
-	load, unload, 
-	charge, chargeStop, 
-	pause, resume, 
-	doorOpen, doorClose,
-	login,
-	guideMove,
-	preciseMove,
-	straightBackMove;
+	Move, 		CancelMove, 
+	Load, 		Unload, 
+	Charge, 	ChargeStop, 
+	Pause, 		Resume, 
+	DoorOpen, 	DoorClose,
+	Login,
+	GuideMove,
+	PreciseMove,
+	StraightBackMove;
 }

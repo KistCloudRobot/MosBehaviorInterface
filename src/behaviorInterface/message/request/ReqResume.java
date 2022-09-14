@@ -27,26 +27,26 @@ public class ReqResume extends ReqMessage {
 	}
 	
 	public ActionType getActionType() {
-		return ActionType.resume;
+		return ActionType.Resume;
 	}
 	
-	public String makeResponse() {
-		String response = null;
-		if(this.responseMessage instanceof AckEndResume) {
-			Expression id = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
-			Expression acionID = GLFactory.newExpression(GLFactory.newGL("actionID", id));
-			Expression actionResult;
-			int result = ((AckEndResume) this.responseMessage).getResult();
-			if(result == 0) {
-				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
-			}
-			else {
-				actionResult = GLFactory.newExpression(GLFactory.newValue("fail"));
-			}
-			
-			GeneralizedList gl = GLFactory.newGL(this.getActionType().toString(), acionID, actionResult);
-			response = GLFactory.unescape(gl.toString());
-		}
-		return response;
-	}
+//	public String makeResponse() {
+//		String response = null;
+//		if(this.responseMessage instanceof AckEndResume) {
+//			Expression id = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
+//			Expression acionID = GLFactory.newExpression(GLFactory.newGL("actionID", id));
+//			Expression actionResult;
+//			int result = ((AckEndResume) this.responseMessage).getResult();
+//			if(result == 0) {
+//				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
+//			}
+//			else {
+//				actionResult = GLFactory.newExpression(GLFactory.newValue("fail"));
+//			}
+//			
+//			GeneralizedList gl = GLFactory.newGL(this.getActionType().toString(), acionID, actionResult);
+//			response = GLFactory.unescape(gl.toString());
+//		}
+//		return response;
+//	}
 }

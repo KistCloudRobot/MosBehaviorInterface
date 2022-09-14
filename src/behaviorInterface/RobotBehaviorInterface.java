@@ -7,7 +7,7 @@ import java.util.List;
 
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.ActionType;
-import behaviorInterface.mosInterface.mosValue.LoginID;
+import behaviorInterface.mosInterface.mosValue.RobotID;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 import kr.ac.uos.ai.arbi.ltm.DataSource;
 import kr.ac.uos.ai.arbi.model.GLFactory;
@@ -19,13 +19,11 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	private MosInterface mi;
 
 	private final String brokerURL;
-	private final String mcArbiID;
 	private final String mosURL;
 	private final String robotID;
 	
-	public RobotBehaviorInterface(String brokerURL, String mcArbiID, String mosURL, String robotID) {
+	public RobotBehaviorInterface(String brokerURL, String mosURL, String robotID) {
 		this.brokerURL = brokerURL;
-		this.mcArbiID = mcArbiID;
 		this.mosURL = mosURL;
 		this.robotID = robotID;
 	}
@@ -33,7 +31,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	@Override
 	public void onStart() {
 		try {
-			String dataSourceURI = "ds://www.arbi.com/" + this.mcArbiID + "/BehaviorInterface";
+			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
 			ds.connect(brokerURL, dataSourceURI, 2);
 
@@ -48,7 +46,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 			this.initDS();
 			mi.connect(mosURL, mosPort);
 			System.out.println("login...");
-			System.out.println(mi.login(LoginID.valueOf(this.mcArbiID)));
+			System.out.println(mi.login(RobotID.valueOf(this.robotID)));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -57,13 +55,15 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	
 	protected void initDS() {
 		try {
-			ds.assertFact("(RobotLoading \"" + robotID + "\" \"loading\")");
+			ds.assertFact("(robotLoading \"" + robotID + "\" \"loading\")");
 			Thread.sleep(50);
-			ds.assertFact("(RobotStatus \"" + robotID + "\" \"Ready\")");
+			ds.assertFact("(robotStatus \"" + robotID + "\" \"Ready\")");
 			Thread.sleep(50);
-			ds.assertFact("(RobotSpeed \"" + robotID + "\" 0)");
+			ds.assertFact("(robotSpeed \"" + robotID + "\" 0)");
 			Thread.sleep(50);
-			ds.assertFact("(RobotBattery \"" + robotID + "\" 0)");
+			ds.assertFact("(batteryRemain \"" + robotID + "\" 0)");
+			Thread.sleep(50);
+			ds.assertFact("(robotDegree \"" + robotID + "\" 0)");
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -76,12 +76,12 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		try {
 			GeneralizedList gl = GLFactory.newGLFromGLString(request);
 			ActionType actionType = ActionType.valueOf(gl.getName());
-			String actionID = gl.getExpression(0).asGeneralizedList().getExpression(0).asValue().stringValue();
+			String actionID = gl.getExpression(0).asValue().stringValue();
 			int nodeID = 0;
 			String direction = null;
 			String response = null;
 			switch(actionType) {
-			case move:
+			case Move:
 				GeneralizedList pathGL = gl.getExpression(1).asGeneralizedList();
 				List<Integer> path = new LinkedList<Integer>();
 				int pathSize = pathGL.getExpressionsSize();
@@ -90,41 +90,41 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 				}
 				response = this.mi.move(sender, actionID, pathSize, path);
 				break;
-			case cancelMove:
+			case CancelMove:
 				response = this.mi.cancelMove(sender, actionID);
 				break;
-			case load:
+			case Load:
 				nodeID = gl.getExpression(1).asValue().intValue();
 				response = this.mi.load(sender, actionID, nodeID);
 				break;
-			case unload:
+			case Unload:
 				nodeID = gl.getExpression(1).asValue().intValue();
 				response = this.mi.unload(sender, actionID, nodeID);
 				break;
-			case charge:
+			case Charge:
 				nodeID = gl.getExpression(1).asValue().intValue();
 				response = this.mi.charge(sender, actionID, nodeID);
 				break;
-			case chargeStop:
+			case ChargeStop:
 				nodeID = gl.getExpression(1).asValue().intValue();
 				response = this.mi.chargeStop(sender, actionID, nodeID);
 				break;
-			case pause:
+			case Pause:
 				response = this.mi.pause(sender, actionID);
 				break;
-			case resume:
+			case Resume:
 				response = this.mi.resume(sender, actionID);
 				break;
-			case guideMove:
+			case GuideMove:
 				nodeID = gl.getExpression(1).asValue().intValue();
 				direction = gl.getExpression(2).asValue().stringValue();
 				response = this.mi.guideMove(sender, actionID, nodeID, direction);
 				break;
-			case preciseMove:
+			case PreciseMove:
 				nodeID = gl.getExpression(1).asValue().intValue();
 				response = this.mi.preciseMove(sender, actionID, nodeID);
 				break;
-			case straightBackMove:
+			case StraightBackMove:
 				nodeID = gl.getExpression(1).asValue().intValue();
 				response = this.mi.straightBackMove(sender, actionID, nodeID);
 				break;
@@ -154,25 +154,28 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		sendRobotSatus(robotID, status);
 		sendRobotSpeed(robotID, speed);
 		sendRobotBattery(robotID, battery);
+		sendRobotDegree(robotID, theta);
 	}
 	
 	private void sendRobotPosition(String robotID, float x, float y) {
-		String gl = "(RobotPosition \"" + robotID + "\" " + x + " " + y + ")";
-//		System.out.println(gl);
-		ds.assertFact(gl);
+		String before = "(robotPosition \"" + robotID + "\" $x $y)";
+		String after = "(robotPosition \"" + robotID + "\" " + x + " " + y + ")";
+		String updateGL = "(update " + before + " " + after + ")";
+		//System.out.println(gl);
+		ds.updateFact(updateGL);
 	}
 	
 	private void sendRobotLoading(String robotID, String loading) {
-		String before = "(RobotLoading \"" + robotID + "\" $loading)";
-		String after = "(RobotLoading \"" + robotID + "\" \"" + loading + "\")";
+		String before = "(robotLoading \"" + robotID + "\" $loading)";
+		String after = "(robotLoading \"" + robotID + "\" \"" + loading + "\")";
 		String updateGL = "(update " + before + " " + after + ")";
 //		System.out.println(updateGL);
 		ds.updateFact(updateGL);
 	}
 	
 	private void sendRobotSatus(String robotID, String status) {
-		String before = "(RobotStatus \"" + robotID + "\" $status)";
-		String after = "(RobotStatus \"" + robotID + "\" \"" + status + "\")";
+		String before = "(robotStatus \"" + robotID + "\" $status)";
+		String after = "(robotStatus \"" + robotID + "\" \"" + status + "\")";
 		String updateGL = "(update " + before + " " + after + ")";
 //		System.out.println(updateGL);
 		ds.updateFact(updateGL);
@@ -180,16 +183,24 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	}
 	
 	private void sendRobotSpeed(String robotID, int speed) {
-		String before = "(RobotSpeed \"" + robotID + "\" $speed)";
-		String after = "(RobotSpeed \"" + robotID + "\" " + speed + ")";
+		String before = "(robotSpeed \"" + robotID + "\" $speed)";
+		String after = "(robotSpeed \"" + robotID + "\" " + speed + ")";
 		String updateGL = "(update " + before + " " + after + ")";
 //		System.out.println(updateGL);
 		ds.updateFact(updateGL);
 	}
 	
 	private void sendRobotBattery(String robotID, int battery) {
-		String before = "(RobotBattery \"" + robotID + "\" $battery)";
-		String after = "(RobotBattery \"" + robotID + "\" " + battery + ")";
+		String before = "(batteryRemain \"" + robotID + "\" $battery)";
+		String after = "(batteryRemain \"" + robotID + "\" " + battery + ")";
+		String updateGL = "(update " + before + " " + after + ")";
+//		System.out.println(updateGL);
+		ds.updateFact(updateGL);
+	}
+	
+	private void sendRobotDegree(String robotID, int theta) {
+		String before = "(robotDegree \"" + robotID + "\" $degree)";
+		String after = "(robotDegree \"" + robotID + "\" " + theta + ")";
 		String updateGL = "(update " + before + " " + after + ")";
 //		System.out.println(updateGL);
 		ds.updateFact(updateGL);
@@ -200,24 +211,33 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	}	
 	
 	public static void main(String[] args) {
-		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
-		String mosURL = System.getenv("MOS");
-		String brokerName = System.getenv("AGENT");
-		String robotID = System.getenv("ROBOT");
-//		brokerURL = "tcp://127.0.0.1:61116";
-		if(mosURL == null) {
-			mosURL = "192.168.0.11:30001";
-		}
-		if(brokerName == null) {
-			brokerName = "Lift1";
-		}
-		if(robotID == null) {
+		String robotID = null;
+		String brokerURL = null;
+		String mosURL = null;
+//		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
+//		String mosURL = System.getenv("MOS");
+//		String brokerName = System.getenv("AGENT");
+//		String robotID = System.getenv("ROBOT");
+////		brokerURL = "tcp://127.0.0.1:61116";
+//		if(mosURL == null) {
+//			mosURL = "127.0.0.1:30001";
+//		if(robotID == null) {
+//			robotID = "AMR_LIFT1";
+//		}
+		if(args == null) {
 			robotID = "AMR_LIFT1";
+			brokerURL = "tcp://172.16.165.141:61116";
+			mosURL = "127.0.0.1:30001";
+		}
+		else {
+			robotID = args[0];
+			brokerURL = args[1];
+			mosURL = args[2];
 		}
 		
-		String BehaviorInterfaceURI = "agent://www.arbi.com/" + brokerName + "/BehaviorInterface";
+		String BehaviorInterfaceURI = "agent://www.arbi.com/BehaviorInterface";
 
-		BehaviorInterface bi = new RobotBehaviorInterface(brokerURL, brokerName, mosURL, robotID);
+		BehaviorInterface bi = new RobotBehaviorInterface(brokerURL, mosURL, robotID);
 		
 		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, 2);
 	}

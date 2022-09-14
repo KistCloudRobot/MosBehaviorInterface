@@ -2,27 +2,28 @@ package behaviorInterface.message.request;
 
 import behaviorInterface.message.acknowledge.AckEndLogin;
 import behaviorInterface.mosInterface.mosValue.ActionType;
-import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.MessageType;
+import behaviorInterface.mosInterface.mosValue.RobotID;
 
 public class ReqLogin extends ReqMessage {
-	private LoginID mcArbiID;
+	private RobotID robotiD;
 	
-	public ReqLogin(LoginID mcArbiID) {
+	public ReqLogin(RobotID robotiD) {
 		super(null, null);
 		this.messageType = MessageType.ReqLogin;
-		this.mcArbiID = mcArbiID;
+		this.robotiD = robotiD;
 	}
 	
-	public LoginID getLoginID() {
-		return this.mcArbiID;
+	public RobotID getLoginID() {
+		return this.robotiD;
 	}
 
 	@Override
 	public ActionType getActionType() {
-		return ActionType.login;
+		return ActionType.Login;
 	}
 	
+	@Override
 	public String makeResponse() {
 		String response = null;
 		if(this.responseMessage instanceof AckEndLogin) {

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum RobotID {
-	AMR_LIFT1(0), AMR_LIFT2(1), AMR_TOW1(2), AMR_TOW2(3);
+	LOCAL(0), AMR_LIFT1(1), AMR_LIFT2(2), AMR_LIFT3(3), AMR_LIFT4(4);
 	
 	private final int id;
 	private static final Map<Integer, RobotID> BY_VALUE = new HashMap<>();

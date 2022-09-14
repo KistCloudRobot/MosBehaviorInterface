@@ -34,29 +34,29 @@ public class ReqChargeStop extends ReqMessage {
 	}
 	
 	public ActionType getActionType() {
-		return ActionType.chargeStop;
+		return ActionType.ChargeStop;
 	}
 	
-	public String makeResponse() {
-		String response = null;
-		if(this.responseMessage instanceof AckChargeStop) {
-			response = "(ok)";
-		}
-		if(this.responseMessage instanceof AckEndChargeStop) {
-			Expression id = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
-			Expression acionID = GLFactory.newExpression(GLFactory.newGL("actionID", id));
-			Expression actionResult;
-			int result = ((AckEndChargeStop) this.responseMessage).getResult();
-			if(result == 0) {
-				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
-			}
-			else {
-				actionResult = GLFactory.newExpression(GLFactory.newValue("fail"));
-			}
-			
-			GeneralizedList gl = GLFactory.newGL(this.getActionType().toString(), acionID, actionResult);
-			response = GLFactory.unescape(gl.toString());
-		}
-		return response;
-	}
+//	public String makeResponse() {
+//		String response = null;
+//		if(this.responseMessage instanceof AckChargeStop) {
+//			response = "(ok)";
+//		}
+//		if(this.responseMessage instanceof AckEndChargeStop) {
+//			Expression id = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
+//			Expression acionID = GLFactory.newExpression(GLFactory.newGL("actionID", id));
+//			Expression actionResult;
+//			int result = ((AckEndChargeStop) this.responseMessage).getResult();
+//			if(result == 0) {
+//				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
+//			}
+//			else {
+//				actionResult = GLFactory.newExpression(GLFactory.newValue("fail"));
+//			}
+//			
+//			GeneralizedList gl = GLFactory.newGL(this.getActionType().toString(), acionID, actionResult);
+//			response = GLFactory.unescape(gl.toString());
+//		}
+//		return response;
+//	}
 }

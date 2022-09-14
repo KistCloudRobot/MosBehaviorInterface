@@ -26,7 +26,6 @@ import behaviorInterface.message.request.ReqUnload;
 import behaviorInterface.mosInterface.communication.Adaptor;
 import behaviorInterface.mosInterface.mosValue.ActionType;
 import behaviorInterface.mosInterface.mosValue.DoorID;
-import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.MessageType;
 import behaviorInterface.mosInterface.mosValue.RobotID;
 import kr.ac.uos.ai.arbi.agent.ArbiAgent;
@@ -83,6 +82,8 @@ public class MosInterface {
 			String loading;
 			if(rtsr.isLoading()) loading = "Loading";
 			else loading = "Unloading";
+//			System.out.println("RTSR x : " + rtsr.getX());
+//			System.out.println("RTSR y : " + rtsr.getY());
 			behaviorInterface.onRTSR(rtsr.getRobotID().toString(), rtsr.getRobotStatus().toString(), rtsr.getX(), rtsr.getY(), rtsr.getTheta(), rtsr.getSpeed(), rtsr.getBattery(), loading);
 			break;
 		case AckPause:
@@ -159,9 +160,9 @@ public class MosInterface {
 		}
 	}
 	
-	public String login(LoginID mcArbiID) {
+	public String login(RobotID robotID) {
 		if(!this.isLogin) {
-			this.waitingResponse = new ReqLogin(mcArbiID);
+			this.waitingResponse = new ReqLogin(robotID);
 			this.adaptor.send(this.waitingResponse);
 			String response = this.waitingResponse.getResponse();
 			this.waitingResponse = null;
@@ -269,7 +270,7 @@ public class MosInterface {
 	}
 	
 	public String pause(String sender, String actionID) throws Exception {
-		if(this.isLogin && this.currentActionType != ActionType.pause && this.currentActionType != null) {
+		if(this.isLogin && this.currentActionType != ActionType.Pause && this.currentActionType != null) {
 			this.pausedWaitingResponse = this.waitingResponse;
 			this.waitingResponse = new ReqPause(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
@@ -284,7 +285,7 @@ public class MosInterface {
 	}
 	
 	public String resume(String sender, String actionID) throws Exception {
-		if(this.isLogin && this.waitingResponse == null && this.currentActionType == ActionType.pause) {
+		if(this.isLogin && this.waitingResponse == null && this.currentActionType == ActionType.Pause) {
 			this.waitingResponse = new ReqResume(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);

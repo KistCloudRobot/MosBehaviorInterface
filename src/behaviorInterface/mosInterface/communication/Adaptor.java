@@ -56,9 +56,8 @@ import behaviorInterface.message.request.ReqStraightBackMove;
 import behaviorInterface.message.request.ReqUnload;
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.DoorID;
-import behaviorInterface.mosInterface.mosValue.LoginID;
-import behaviorInterface.mosInterface.mosValue.MessageType;
 import behaviorInterface.mosInterface.mosValue.RobotID;
+import behaviorInterface.mosInterface.mosValue.MessageType;
 import behaviorInterface.mosInterface.mosValue.RobotStatus;
 
 public class Adaptor extends Thread {
@@ -70,6 +69,8 @@ public class Adaptor extends Thread {
 	int mosPort;
 	boolean isLocal;
 
+	private String ip;
+	private int port;
     private Socket socket;
     private OutputStream out;
     private InputStream in;
@@ -91,6 +92,8 @@ public class Adaptor extends Thread {
 	}
 	
 	public void connect(String ip, int port) {
+		this.ip = ip;
+		this.port = port;
 		while(true) {
 	        try {
 				socket = new Socket(ip, port);
@@ -144,19 +147,29 @@ public class Adaptor extends Thread {
 				sb.append("\n");
 				int protocolID = byteBuffer.getInt();
 				int messageTypeID = byteBuffer.getInt();
-//				sb.append("messageTypeID : " + messageTypeID + "\n");
+				sb.append("messageTypeID : " + messageTypeID + "\n");
 				MessageType messageType = MessageType.getEnum(messageTypeID);
-				sb.append("messageType : " + messageType + "\n");
 //				if(messageType != MessageType.RTSR) {
 //					System.out.println(sb.toString());
-//				}
-				int packetSize = byteBuffer.getInt();
-				byte[] packetData = this.readByte(packetSize - HEADER_SIZE);
-				
-//				MessageHandleTask task = new MessageHandleTask(protocolID, messageType, packetData);
-//				messageThreadPool.execute(task);
-				
-				this.parseMessage(protocolID, messageType, packetData);
+//				}	
+				if(messageType == null) {
+					System.out.println("undefined message type");
+					this.socket.close();
+					break;
+				}
+				else {
+//					sb.append("messageType : " + messageType + "\n");
+//					if(messageType != MessageType.RTSR) {
+//						System.out.println(sb.toString());
+//					}
+					int packetSize = byteBuffer.getInt();
+					byte[] packetData = this.readByte(packetSize - HEADER_SIZE);
+					
+//					MessageHandleTask task = new MessageHandleTask(protocolID, messageType, packetData);
+//					messageThreadPool.execute(task);
+					
+					this.parseMessage(protocolID, messageType, packetData);
+				}
 			} 
 			catch (IOException e) {
 				e.printStackTrace();
@@ -214,7 +227,11 @@ public class Adaptor extends Thread {
 			case AckEndPreciseMove:
 			case AckStraightBackMove:
 			case AckEndStraightBackMove:
+			case AckLogin:
+			case AckEndLogin:
 				RobotID robotID = RobotID.getEnum(id);
+				if(messageType == MessageType.AckLogin || messageType == MessageType.AckEndLogin)
+					System.out.println(robotID);
 				return robotID == null ? false : this.robotID.equals(robotID);
 			case AckDoorOpen:
 			case AckEndDoorOpen:
@@ -223,8 +240,6 @@ public class Adaptor extends Thread {
 				if(this.isLocal) return true;
 				else return false;
 			case PersonCall:
-			case AckLogin:
-			case AckEndLogin:
 				return true;
 			default:
 				return false;
@@ -290,19 +305,27 @@ public class Adaptor extends Thread {
 				this.mi.onMessage(ackMessage);
 				break;
 			case AckLogin:
-				ackMessage = new AckLogin(LoginID.getEnum(id));
-				this.mi.onMessage(ackMessage);
+				robotID = RobotID.getEnum(id);
+				if(robotID == RobotID.LOCAL) {
+					ackMessage = new AckLogin(robotID);
+					this.mi.onMessage(ackMessage);
+				}
 				break;
 			case AckEndLogin:
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndLogin(LoginID.getEnum(id), result);
-				this.mi.onMessage(ackMessage);
+				robotID = RobotID.getEnum(id);
+				if(robotID == RobotID.LOCAL) {
+					ackMessage = new AckEndLogin(robotID, result);
+					this.mi.onMessage(ackMessage);
+				}
 				break;
 			default:
 				break;
 			}
 		}
 		else if(isReceiver(protocolID, messageType, id)) {
+			if(messageType != MessageType.RTSR)
+				System.out.println("[" + this.robotID + "] " + messageType.toString());
 			switch(messageType) {
 			case RTSR:
 				robotID = RobotID.getEnum(id);
@@ -405,12 +428,12 @@ public class Adaptor extends Thread {
 				this.mi.onMessage(ackMessage);
 				break;
 			case AckLogin:
-				ackMessage = new AckLogin(LoginID.getEnum(id));
+				ackMessage = new AckLogin(RobotID.getEnum(id));
 				this.mi.onMessage(ackMessage);
 				break;
 			case AckEndLogin:
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndLogin(LoginID.getEnum(id), result);
+				ackMessage = new AckEndLogin(RobotID.getEnum(id), result);
 				this.mi.onMessage(ackMessage);
 				break;
 			case AckGuideMove:

@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.ActionType;
-import behaviorInterface.mosInterface.mosValue.LoginID;
 import behaviorInterface.mosInterface.mosValue.RobotID;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 import kr.ac.uos.ai.arbi.ltm.DataSource;
@@ -17,19 +16,17 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	private MosInterface mi;
 
 	private String brokerURL;
-	private String mcArbiID;
 	private String mosURL;
 	
-	public LocalBehaviorInterface(String brokerURL, String mcArbiID, String mosURL) {
+	public LocalBehaviorInterface(String brokerURL, String mosURL) {
 		this.brokerURL = brokerURL;
-		this.mcArbiID = mcArbiID;
 		this.mosURL = mosURL;
 	}
 	
 	@Override
 	public void onStart() {
 		try {
-			String dataSourceURI = "ds://www.arbi.com/" + this.mcArbiID + "/BehaviorInterface";
+			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
 			ds.connect(brokerURL, dataSourceURI, 2);
 
@@ -44,7 +41,7 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 			this.initDS();
 			mi.connect(url, port);
 			System.out.println("login...");
-			System.out.println(mi.login(LoginID.valueOf(this.mcArbiID)));
+			System.out.println(mi.login(RobotID.LOCAL));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -69,15 +66,15 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 		try {
 			GeneralizedList gl = GLFactory.newGLFromGLString(request);
 			ActionType actionType = ActionType.valueOf(gl.getName());
-			String actionID = gl.getExpression(0).asGeneralizedList().getExpression(0).asValue().stringValue();
+			String actionID = gl.getExpression(0).asValue().stringValue();
 			String response = null;
 			String doorID = null;
 			switch(actionType) {
-			case doorOpen:
+			case DoorOpen:
 				doorID = gl.getExpression(1).asValue().stringValue();
 				response = this.mi.doorOpen(sender, actionID, doorID);
 				break;
-			case doorClose:
+			case DoorClose:
 				doorID = gl.getExpression(1).asValue().stringValue();
 				response = this.mi.doorClose(sender, actionID, doorID);
 				break;
@@ -129,20 +126,23 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	}
 	
 	public static void main(String[] args) {
-		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
-		String mosURL = System.getenv("MOS");
-		String brokerName = System.getenv("AGENT");
-//		brokerURL = "tcp://127.0.0.1:61316";
-		if(mosURL == null) {
-			mosURL = "192.168.0.11:30001";
+		String brokerURL = null;
+		String mosURL = null;
+//		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
+//		String mosURL = System.getenv("MOS");
+//		brokerURL = "tcp://127.0.0.1:61316"
+		if(args == null) {
+			brokerURL = "tcp://127.0.0.1:61116";
+			mosURL = "127.0.0.1:30001";
 		}
-		if(brokerName == null) {
-			brokerName = "Local";
+		else {
+			brokerURL = args[0];
+			mosURL = args[1];
 		}
 		
-		String BehaviorInterfaceURI = "agent://www.arbi.com/" + brokerName + "/BehaviorInterface";
+		String BehaviorInterfaceURI = "agent://www.arbi.com/BehaviorInterface";
 		
-		BehaviorInterface bi = new LocalBehaviorInterface(brokerURL, brokerName, mosURL);
+		BehaviorInterface bi = new LocalBehaviorInterface(brokerURL, mosURL);
 		
 		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, 2);
 	}

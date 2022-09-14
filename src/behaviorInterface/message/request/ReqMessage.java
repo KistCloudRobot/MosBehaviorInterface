@@ -5,8 +5,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import behaviorInterface.message.BehaviorInterfaceMessage;
+import behaviorInterface.message.acknowledge.AckDoorClose;
+import behaviorInterface.message.acknowledge.AckEndDoorClose;
+import behaviorInterface.message.acknowledge.AckEndMessage;
 import behaviorInterface.message.acknowledge.AckMessage;
 import behaviorInterface.mosInterface.mosValue.ActionType;
+import kr.ac.uos.ai.arbi.model.Expression;
+import kr.ac.uos.ai.arbi.model.GLFactory;
+import kr.ac.uos.ai.arbi.model.GeneralizedList;
 
 public abstract class ReqMessage extends BehaviorInterfaceMessage {
 	private String sender;
@@ -54,7 +60,27 @@ public abstract class ReqMessage extends BehaviorInterfaceMessage {
 		}
 	}
 	
-	abstract public String makeResponse();
+	public String makeResponse() {
+		String response = "(fail)";
+		if(this.responseMessage instanceof AckEndMessage) {
+			Expression acionID = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
+			Expression actionResult;
+			int result = ((AckEndMessage) this.responseMessage).getResult();
+			if(result == 0) {
+				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
+			}
+			else {
+				actionResult = GLFactory.newExpression(GLFactory.newValue("fail"));
+			}
+			
+			GeneralizedList gl = GLFactory.newGL("ActionResult", acionID, actionResult);
+			response = GLFactory.unescape(gl.toString());
+		}
+		else if(this.responseMessage instanceof AckMessage) {
+			response = "(ok)";
+		}
+		return response;
+	}
 	
 	public String getResponse() {
 		responceLock.lock();

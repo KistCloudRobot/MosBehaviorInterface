@@ -1,24 +1,24 @@
 package behaviorInterface.message.acknowledge;
 
-import behaviorInterface.mosInterface.mosValue.LoginID;
+import behaviorInterface.mosInterface.mosValue.RobotID;
 import behaviorInterface.mosInterface.mosValue.MessageType;
 
 public class AckEndLogin extends AckEndMessage {
-	private LoginID mcArbiID;
+	private RobotID robotID;
 	private int result;
 	
-	public AckEndLogin(int mcArbiID, int result) {
-		this(LoginID.getEnum(mcArbiID), result);
+	public AckEndLogin(int robotID, int result) {
+		this(RobotID.getEnum(robotID), result);
 	}
 	
-	public AckEndLogin(LoginID mcArbiID, int result) {
+	public AckEndLogin(RobotID robotID, int result) {
 		this.messageType = MessageType.AckEndLogin;
-		this.mcArbiID = mcArbiID;
+		this.robotID = robotID;
 		this.result = result;
 	}
 	
-	public LoginID getLoginID() {
-		return this.mcArbiID;
+	public RobotID getLoginID() {
+		return this.robotID;
 	}
 	
 	public int getResult() {
