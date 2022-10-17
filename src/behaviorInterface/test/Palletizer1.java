@@ -10,8 +10,8 @@ import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 
 public class Palletizer1 {
 	public static void main(String[] args) {
-		String brokerURL = "tcp://172.16.165.141:61112";
-//		String brokerURL = "tcp://127.0.0.1:61116";
+//		String brokerURL = "tcp://172.16.165.141:61112";
+		String brokerURL = "tcp://127.0.0.1:62112";
 //		String mosURL = "172.16.165.208:36666";
 //		String mosURL = "172.16.165.102:30001";
 		String mosURL = "127.0.0.1:30001";

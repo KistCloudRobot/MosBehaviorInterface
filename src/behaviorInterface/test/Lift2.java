@@ -7,8 +7,8 @@ import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 
 public class Lift2 {
 	public static void main(String[] args) {
-		String brokerURL = "tcp://172.16.165.141:61115";
-//		String brokerURL = "tcp://127.0.0.1:61115";
+//		String brokerURL = "tcp://172.16.165.141:61115";
+		String brokerURL = "tcp://127.0.0.1:65115";
 //		String mosURL = "172.16.165.208:36666";
 //		String mosURL = "172.16.165.102:30001";
 		String mosURL = "127.0.0.1:30001";

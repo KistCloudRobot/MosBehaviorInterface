@@ -126,7 +126,7 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 	@Override
 	public void palletizerPackingFinish(String palletizerID, int nodeID) {
 		System.out.println("palletizerPackingFinish " + palletizerID + " " + nodeID);
-		this.send("agent://www.arbi.com/TaskManager", "(palletizerPackingFinish \"" + palletizerID + " " + nodeID + ")");
+		this.send("agent://www.arbi.com/TaskManager", "(palletizerPackingFinish \"" + palletizerID + "\" " + nodeID + ")");
 	}
 	
 	public void sendPersonCall(int locationID, int cmdID) {

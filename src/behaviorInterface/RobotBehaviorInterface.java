@@ -167,7 +167,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		String before = "(robotPosition \"" + robotID + "\" $x $y)";
 		String after = "(robotPosition \"" + robotID + "\" " + x + " " + y + ")";
 		String updateGL = "(update " + before + " " + after + ")";
-		//System.out.println(gl);
+//		System.out.println(updateGL);
 		ds.updateFact(updateGL);
 	}
 	
