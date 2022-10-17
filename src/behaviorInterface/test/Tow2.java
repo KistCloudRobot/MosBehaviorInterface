@@ -2,6 +2,7 @@ package behaviorInterface.test;
 
 import behaviorInterface.BehaviorInterface;
 import behaviorInterface.RobotBehaviorInterface;
+import kr.ac.uos.ai.arbi.BrokerType;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 
 public class Tow2 {
@@ -14,6 +15,6 @@ public class Tow2 {
 
 		BehaviorInterface bi = new RobotBehaviorInterface(brokerURL, mosURL, robotID);
 		
-		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, 2);
+		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
 	}
 }

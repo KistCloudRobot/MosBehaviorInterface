@@ -9,5 +9,7 @@ public enum ActionType {
 	Login,
 	GuideMove,
 	PreciseMove,
-	StraightBackMove;
+	StraightBackMove,
+	PalletizerStart, PalletizerStop,
+	EnterPalletizer, ExitPalletizer;
 }

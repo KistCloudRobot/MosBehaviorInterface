@@ -8,6 +8,7 @@ import java.util.List;
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.ActionType;
 import behaviorInterface.mosInterface.mosValue.RobotID;
+import kr.ac.uos.ai.arbi.BrokerType;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 import kr.ac.uos.ai.arbi.ltm.DataSource;
 import kr.ac.uos.ai.arbi.model.GLFactory;
@@ -33,7 +34,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		try {
 			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
-			ds.connect(brokerURL, dataSourceURI, 2);
+			ds.connect(brokerURL, dataSourceURI, BrokerType.ZEROMQ);
 
 			mi = new MosInterface(this.robotID, this);
 			String[] mosComponents = mosURL.split(":");
@@ -157,6 +158,11 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		sendRobotDegree(robotID, theta);
 	}
 	
+	@Override
+	public void palletizerPackingFinish(String palletizerID, int nodeID) {
+		System.out.println("what? palletizer packing finish");
+	}
+	
 	private void sendRobotPosition(String robotID, float x, float y) {
 		String before = "(robotPosition \"" + robotID + "\" $x $y)";
 		String after = "(robotPosition \"" + robotID + "\" " + x + " " + y + ")";
@@ -239,6 +245,6 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 
 		BehaviorInterface bi = new RobotBehaviorInterface(brokerURL, mosURL, robotID);
 		
-		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, 2);
+		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
 	}
 }

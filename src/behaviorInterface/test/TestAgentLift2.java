@@ -6,12 +6,13 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import kr.ac.uos.ai.arbi.BrokerType;
 import kr.ac.uos.ai.arbi.agent.ArbiAgent;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentMessage;
 
 
-public class Lift2Test {
+public class TestAgentLift2 {
 	private static class TestAgent extends ArbiAgent implements Runnable {
 		private final static String LocalBehaviorInterfaceURI = "agent://www.arbi.com/BehaviorInterface";
 		private String behaviorInterfaceURI;
@@ -282,6 +283,6 @@ public class Lift2Test {
 	}
 	
 	public static void main(String[] args) {
-		ArbiAgentExecutor.execute("tcp://172.16.165.141:61115", "agent://www.arbi.com/TestAgent", new TestAgent("Lift2"), 2);
+		ArbiAgentExecutor.execute("tcp://172.16.165.141:61115", "agent://www.arbi.com/TestAgent", new TestAgent("Lift2"), BrokerType.ZEROMQ);
 	}
 }

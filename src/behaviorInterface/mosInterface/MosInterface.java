@@ -6,6 +6,7 @@ import java.util.List;
 import behaviorInterface.BehaviorInterface;
 import behaviorInterface.message.acknowledge.AckEndMove;
 import behaviorInterface.message.acknowledge.AckMessage;
+import behaviorInterface.message.acknowledge.PalletizerPackingFinish;
 import behaviorInterface.message.acknowledge.PersonCall;
 import behaviorInterface.message.acknowledge.RTSR;
 import behaviorInterface.message.request.ReqCancelMove;
@@ -13,11 +14,15 @@ import behaviorInterface.message.request.ReqCharge;
 import behaviorInterface.message.request.ReqChargeStop;
 import behaviorInterface.message.request.ReqDoorClose;
 import behaviorInterface.message.request.ReqDoorOpen;
+import behaviorInterface.message.request.ReqEnterPalletizer;
+import behaviorInterface.message.request.ReqExitPalletizer;
 import behaviorInterface.message.request.ReqGuideMove;
 import behaviorInterface.message.request.ReqLoad;
 import behaviorInterface.message.request.ReqLogin;
 import behaviorInterface.message.request.ReqMessage;
 import behaviorInterface.message.request.ReqMove;
+import behaviorInterface.message.request.ReqPalletizerStart;
+import behaviorInterface.message.request.ReqPalletizerStop;
 import behaviorInterface.message.request.ReqPause;
 import behaviorInterface.message.request.ReqPreciseMove;
 import behaviorInterface.message.request.ReqResume;
@@ -34,7 +39,7 @@ import kr.ac.uos.ai.arbi.model.GLFactory;
 import kr.ac.uos.ai.arbi.model.GeneralizedList;
 
 public class MosInterface {
-	RobotID robotID;
+	RobotID robotID = null;;
 	Adaptor adaptor;
 	BehaviorInterface behaviorInterface;
 	ActionType currentActionType;
@@ -86,6 +91,10 @@ public class MosInterface {
 //			System.out.println("RTSR y : " + rtsr.getY());
 			behaviorInterface.onRTSR(rtsr.getRobotID().toString(), rtsr.getRobotStatus().toString(), rtsr.getX(), rtsr.getY(), rtsr.getTheta(), rtsr.getSpeed(), rtsr.getBattery(), loading);
 			break;
+		case PalletizerPackingFinish:
+			PalletizerPackingFinish msg = (PalletizerPackingFinish)message;
+			behaviorInterface.palletizerPackingFinish(msg.getPalletizerID().toString(), msg.getNodeID());
+			break;
 		case AckPause:
 		case AckResume:
 		case AckLogin:
@@ -109,12 +118,14 @@ public class MosInterface {
 		case AckGuideMove:
 		case AckPreciseMove:
 		case AckStraightBackMove:
-			if(this.robotID == null) {
-				System.out.println("[LOCAL] " + messageType);
-			}
-			else {
-				System.out.println("[" + robotID.toString() + "] " + messageType);
-			}
+		case AckPalletizerStart:
+		case AckPalletizerStop:
+//			if(this.robotID != null){
+//				System.out.println("[" + robotID.toString() + "] " + messageType);
+//			}
+//			else {
+//				System.out.println("[LOCAL] " + messageType);
+//			}
 			this.waitingResponse.setResponse(message);
 			break;
 		case AckEndMove:
@@ -128,12 +139,14 @@ public class MosInterface {
 		case AckEndGuideMove:
 		case AckEndPreciseMove:
 		case AckEndStraightBackMove:
-			if(this.robotID == null) {
-				System.out.println("[LOCAL] " + messageType);
-			}
-			else {
-				System.out.println("[" + robotID.toString() + "] " + messageType);
-			}
+		case AckEndPalletizerStart:
+		case AckEndPalletizerStop:
+//			if(this.robotID == null) {
+//				System.out.println("[LOCAL] " + messageType);
+//			}
+//			else {
+//				System.out.println("[" + robotID.toString() + "] " + messageType);
+//			}
 			this.waitingResponse.setResponse(message);
 			this.behaviorInterface.sendMessage(this.waitingResponse.getSender(), this.waitingResponse.getResponse());
 			this.currentActionType = null;
@@ -354,6 +367,54 @@ public class MosInterface {
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
 			return this.waitingResponse.getResponse();
+		}
+		else {
+			return "(fail (actionID \"" + actionID + "\"))";
+		}
+	}
+	
+	public String palletizerStart(String sender, String actionID) throws Exception {
+		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
+			this.waitingResponse = new ReqPalletizerStart(sender, actionID, this.robotID);
+			this.currentActionType = this.waitingResponse.getActionType();
+			this.adaptor.send(this.waitingResponse);
+			return this.waitingResponse.getResponse();
+		}
+		else {
+			return "(fail (actionID \"" + actionID + "\"))";
+		}
+	}
+	
+	public String palletizerStop(String sender, String actionID) throws Exception {
+		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
+			this.waitingResponse = new ReqPalletizerStop(sender, actionID, this.robotID);
+			this.currentActionType = this.waitingResponse.getActionType();
+			this.adaptor.send(this.waitingResponse);
+			return this.waitingResponse.getResponse();
+		}
+		else {
+			return "(fail (actionID \"" + actionID + "\"))";
+		}
+	}
+	
+	public String enterPalletizer(String sender, String actionID, RobotID robotID, int nodeID) throws Exception {
+		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
+			ReqMessage msg = new ReqEnterPalletizer(sender, actionID, this.robotID, robotID, nodeID);
+			this.adaptor.send(msg);
+			this.currentActionType = null;
+			return "(ok)";
+		}
+		else {
+			return "(fail (actionID \"" + actionID + "\"))";
+		}
+	}
+	
+	public String exitPalletizer(String sender, String actionID, RobotID robotID, int nodeID) throws Exception {
+		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
+			ReqMessage msg = new ReqExitPalletizer(sender, actionID, this.robotID, robotID, nodeID);
+			this.adaptor.send(msg);
+			this.currentActionType = null;
+			return "(ok)";
 		}
 		else {
 			return "(fail (actionID \"" + actionID + "\"))";

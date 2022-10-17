@@ -24,6 +24,8 @@ import behaviorInterface.message.acknowledge.AckEndGuideMove;
 import behaviorInterface.message.acknowledge.AckEndLoad;
 import behaviorInterface.message.acknowledge.AckEndLogin;
 import behaviorInterface.message.acknowledge.AckEndMove;
+import behaviorInterface.message.acknowledge.AckEndPalletizerStart;
+import behaviorInterface.message.acknowledge.AckEndPalletizerStop;
 import behaviorInterface.message.acknowledge.AckEndPause;
 import behaviorInterface.message.acknowledge.AckEndPreciseMove;
 import behaviorInterface.message.acknowledge.AckEndResume;
@@ -34,11 +36,14 @@ import behaviorInterface.message.acknowledge.AckLoad;
 import behaviorInterface.message.acknowledge.AckLogin;
 import behaviorInterface.message.acknowledge.AckMessage;
 import behaviorInterface.message.acknowledge.AckMove;
+import behaviorInterface.message.acknowledge.AckPalletizerStart;
+import behaviorInterface.message.acknowledge.AckPalletizerStop;
 import behaviorInterface.message.acknowledge.AckPause;
 import behaviorInterface.message.acknowledge.AckPreciseMove;
 import behaviorInterface.message.acknowledge.AckResume;
 import behaviorInterface.message.acknowledge.AckStraightBackMove;
 import behaviorInterface.message.acknowledge.AckUnload;
+import behaviorInterface.message.acknowledge.PalletizerPackingFinish;
 import behaviorInterface.message.acknowledge.PersonCall;
 import behaviorInterface.message.acknowledge.RTSR;
 import behaviorInterface.message.request.ReqCancelMove;
@@ -46,11 +51,15 @@ import behaviorInterface.message.request.ReqCharge;
 import behaviorInterface.message.request.ReqChargeStop;
 import behaviorInterface.message.request.ReqDoorClose;
 import behaviorInterface.message.request.ReqDoorOpen;
+import behaviorInterface.message.request.ReqEnterPalletizer;
+import behaviorInterface.message.request.ReqExitPalletizer;
 import behaviorInterface.message.request.ReqGuideMove;
 import behaviorInterface.message.request.ReqLoad;
 import behaviorInterface.message.request.ReqLogin;
 import behaviorInterface.message.request.ReqMessage;
 import behaviorInterface.message.request.ReqMove;
+import behaviorInterface.message.request.ReqPalletizerStart;
+import behaviorInterface.message.request.ReqPalletizerStop;
 import behaviorInterface.message.request.ReqPreciseMove;
 import behaviorInterface.message.request.ReqStraightBackMove;
 import behaviorInterface.message.request.ReqUnload;
@@ -205,6 +214,7 @@ public class Adaptor extends Thread {
 		if(protocolID == 40000) {
 			switch(messageType) {
 			case RTSR:
+			case PalletizerPackingFinish:
 			case AckMove:
 			case AckEndMove:
 			case AckCancelMove:
@@ -229,10 +239,15 @@ public class Adaptor extends Thread {
 			case AckEndStraightBackMove:
 			case AckLogin:
 			case AckEndLogin:
-				RobotID robotID = RobotID.getEnum(id);
-				if(messageType == MessageType.AckLogin || messageType == MessageType.AckEndLogin)
-					System.out.println(robotID);
-				return robotID == null ? false : this.robotID.equals(robotID);
+			case AckPalletizerStart:
+			case AckEndPalletizerStart:
+			case AckPalletizerStop:
+			case AckEndPalletizerStop:
+				if(this.robotID != null) {
+					RobotID robotID = RobotID.getEnum(id);
+					return this.robotID.equals(robotID);
+				}
+				else return false;
 			case AckDoorOpen:
 			case AckEndDoorOpen:
 			case AckDoorClose:
@@ -256,9 +271,11 @@ public class Adaptor extends Thread {
 
 		AckMessage ackMessage;
 		RobotID robotID;
+		RobotID palletizerID;
 		DoorID doorID;
 		RobotStatus robotStatus;
 		int result;
+		int nodeID;
 
 		if(isLocal) {
 			switch(messageType) {
@@ -324,8 +341,9 @@ public class Adaptor extends Thread {
 			}
 		}
 		else if(isReceiver(protocolID, messageType, id)) {
-			if(messageType != MessageType.RTSR)
+			if(messageType != MessageType.RTSR) {
 				System.out.println("[" + this.robotID + "] " + messageType.toString());
+			}
 			switch(messageType) {
 			case RTSR:
 				robotID = RobotID.getEnum(id);
@@ -467,6 +485,34 @@ public class Adaptor extends Thread {
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
 				ackMessage = new AckEndStraightBackMove(robotID, result);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckPalletizerStart:
+				palletizerID = RobotID.getEnum(id);
+				ackMessage = new AckPalletizerStart(palletizerID);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckEndPalletizerStart:
+				palletizerID = RobotID.getEnum(id);
+				result = byteBuffer.getInt();
+				ackMessage = new AckEndPalletizerStart(palletizerID, result);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckPalletizerStop:
+				palletizerID = RobotID.getEnum(id);
+				ackMessage = new AckPalletizerStop(palletizerID);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckEndPalletizerStop:
+				palletizerID = RobotID.getEnum(id);
+				result = byteBuffer.getInt();
+				ackMessage = new AckEndPalletizerStop(palletizerID, result);
+				this.mi.onMessage(ackMessage);
+				break;
+			case PalletizerPackingFinish:
+				palletizerID = RobotID.getEnum(id);
+				nodeID = byteBuffer.getInt();
+				ackMessage = new PalletizerPackingFinish(palletizerID, nodeID);
 				this.mi.onMessage(ackMessage);
 				break;
 			default:
@@ -682,6 +728,54 @@ public class Adaptor extends Thread {
 			bf.putInt(robotID.getValue());
 			nodeID = reqStraightBackMove.getNodeID();
 			bf.putInt(nodeID);
+			send(bf);
+			break;
+		case ReqPalletizerStart:
+			ReqPalletizerStart reqPalletizerStart = (ReqPalletizerStart)message;
+			packetSize = 16;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(robotID.getValue());
+			send(bf);
+			break;
+		case ReqPalletizerStop:
+			ReqPalletizerStop reqPalletizerStop = (ReqPalletizerStop)message;
+			packetSize = 16;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(robotID.getValue());
+			send(bf);
+			break;
+		case ReqEnterPalletizer:
+			ReqEnterPalletizer reqEnterPalletizer = (ReqEnterPalletizer)message;
+			packetSize = 24;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(robotID.getValue());
+			bf.putInt(reqEnterPalletizer.getRobotID().getValue());
+			bf.putInt(reqEnterPalletizer.getNodeID());
+			send(bf);
+			break;
+		case ReqExitPalletizer:
+			ReqExitPalletizer reqExitPalletizer = (ReqExitPalletizer)message;
+			packetSize = 24;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(robotID.getValue());
+			bf.putInt(reqExitPalletizer.getRobotID().getValue());
+			bf.putInt(reqExitPalletizer.getNodeID());
 			send(bf);
 			break;
 		default:

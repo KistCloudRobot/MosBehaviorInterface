@@ -5,6 +5,7 @@ import java.io.IOException;
 import behaviorInterface.mosInterface.MosInterface;
 import behaviorInterface.mosInterface.mosValue.ActionType;
 import behaviorInterface.mosInterface.mosValue.RobotID;
+import kr.ac.uos.ai.arbi.BrokerType;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
 import kr.ac.uos.ai.arbi.ltm.DataSource;
 import kr.ac.uos.ai.arbi.model.GLFactory;
@@ -28,7 +29,7 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 		try {
 			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
-			ds.connect(brokerURL, dataSourceURI, 2);
+			ds.connect(brokerURL, dataSourceURI, BrokerType.ZEROMQ);
 
 			mi = new MosInterface(this);
 			String[] mosComponents = mosURL.split(":");
@@ -103,7 +104,12 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 		sendRobotInfo(robotID, x, y, loading);
 		sendCurrentRobotInfo(robotID, x, y, loading);
 	}
-
+	
+	@Override
+	public void palletizerPackingFinish(String palletizerID, int nodeID) {
+		System.out.println("what? palletizer packing finish");
+	}
+	
 	private void sendRobotInfo(String robotID, float x, float y, String loading) {
 		String gl = "(RobotInfo \"" + robotID + "\" " + x + " " + y + " \"" + loading + "\" \"" + System.currentTimeMillis() + "\")";
 //		System.out.println(gl);
@@ -144,6 +150,6 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 		
 		BehaviorInterface bi = new LocalBehaviorInterface(brokerURL, mosURL);
 		
-		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, 2);
+		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
 	}
 }
