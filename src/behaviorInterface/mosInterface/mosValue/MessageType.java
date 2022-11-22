@@ -19,6 +19,7 @@ public enum MessageType {
 	AckLogin(0x32BFB368), 				AckEndLogin(0x190ADBF8),
 	AckGuideMove(0x6649B1A7), 			AckEndGuideMove(0x02655A11),
 	AckPreciseMove(0x5E24BC2B), 		AckEndPreciseMove(0xB79B00DF),
+	AckFlatPreciseMove(0x42E01FCF), 	AckEndFlatPreciseMove(0x86B12596),
 	AckStraightBackMove(0x33446820), 	AckEndStraightBackMove(0x0DD13478),
 	AckPalletizerStart(0xB4B00041), 	AckEndPalletizerStart(0xFFCE80B5), 
 	AckPalletizerStop(0x0FC5E956), 		AckEndPalletizerStop(0x8A2D3F66), 
@@ -33,7 +34,7 @@ public enum MessageType {
 	ReqDoorOpen(0x078F486F), 			ReqDoorClose(0x4DDA0F69),
 	ReqLogin(0x74A3BD60),
 	ReqGuideMove(0xBEB3E9F1),
-	ReqPreciseMove(0x168F1D9D),
+	ReqPreciseMove(0x168F1D9D),			ReqFlatPreciseMove(0x71301BCA),
 	ReqStraightBackMove(0xACB2276E),
 	ReqPalletizerStart(0xD432B77B),		ReqPalletizerStop(0x662BFDCF),
 	ReqEnterPalletizer(0x11A16841),		ReqExitPalletizer(0xD4255BF6);

@@ -34,7 +34,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		try {
 			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
-			ds.connect(brokerURL, dataSourceURI, BrokerType.ZEROMQ);
+			ds.connect(brokerURL, dataSourceURI, BrokerType.ACTIVEMQ);
 
 			mi = new MosInterface(this.robotID, this);
 			String[] mosComponents = mosURL.split(":");
@@ -124,6 +124,10 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 			case PreciseMove:
 				nodeID = gl.getExpression(1).asValue().intValue();
 				response = this.mi.preciseMove(sender, actionID, nodeID);
+				break;
+			case FlatPreciseMove:
+				nodeID = gl.getExpression(1).asValue().intValue();
+				response = this.mi.flatPreciseMove(sender, actionID, nodeID);
 				break;
 			case StraightBackMove:
 				nodeID = gl.getExpression(1).asValue().intValue();

@@ -20,6 +20,7 @@ import behaviorInterface.message.acknowledge.AckEndCharge;
 import behaviorInterface.message.acknowledge.AckEndChargeStop;
 import behaviorInterface.message.acknowledge.AckEndDoorClose;
 import behaviorInterface.message.acknowledge.AckEndDoorOpen;
+import behaviorInterface.message.acknowledge.AckEndFlatPreciseMove;
 import behaviorInterface.message.acknowledge.AckEndGuideMove;
 import behaviorInterface.message.acknowledge.AckEndLoad;
 import behaviorInterface.message.acknowledge.AckEndLogin;
@@ -31,6 +32,7 @@ import behaviorInterface.message.acknowledge.AckEndPreciseMove;
 import behaviorInterface.message.acknowledge.AckEndResume;
 import behaviorInterface.message.acknowledge.AckEndStraightBackMove;
 import behaviorInterface.message.acknowledge.AckEndUnload;
+import behaviorInterface.message.acknowledge.AckFlatPreciseMove;
 import behaviorInterface.message.acknowledge.AckGuideMove;
 import behaviorInterface.message.acknowledge.AckLoad;
 import behaviorInterface.message.acknowledge.AckLogin;
@@ -53,6 +55,7 @@ import behaviorInterface.message.request.ReqDoorClose;
 import behaviorInterface.message.request.ReqDoorOpen;
 import behaviorInterface.message.request.ReqEnterPalletizer;
 import behaviorInterface.message.request.ReqExitPalletizer;
+import behaviorInterface.message.request.ReqFlatPreciseMove;
 import behaviorInterface.message.request.ReqGuideMove;
 import behaviorInterface.message.request.ReqLoad;
 import behaviorInterface.message.request.ReqLogin;
@@ -162,7 +165,7 @@ public class Adaptor extends Thread {
 //					System.out.println(sb.toString());
 //				}	
 				if(messageType == null) {
-					System.out.println("undefined message type");
+					System.out.println("undefined message type : " + Integer.toHexString(messageTypeID));
 					this.socket.close();
 					break;
 				}
@@ -235,6 +238,8 @@ public class Adaptor extends Thread {
 			case AckEndGuideMove:
 			case AckPreciseMove:
 			case AckEndPreciseMove:
+			case AckFlatPreciseMove:
+			case AckEndFlatPreciseMove:
 			case AckStraightBackMove:
 			case AckEndStraightBackMove:
 			case AckLogin:
@@ -476,6 +481,17 @@ public class Adaptor extends Thread {
 				ackMessage = new AckEndPreciseMove(robotID, result);
 				this.mi.onMessage(ackMessage);
 				break;
+			case AckFlatPreciseMove:
+				robotID = RobotID.getEnum(id);
+				ackMessage = new AckFlatPreciseMove(robotID);
+				this.mi.onMessage(ackMessage);
+				break;
+			case AckEndFlatPreciseMove:
+				robotID = RobotID.getEnum(id);
+				result = byteBuffer.getInt();
+				ackMessage = new AckEndFlatPreciseMove(robotID, result);
+				this.mi.onMessage(ackMessage);
+				break;
 			case AckStraightBackMove:
 				robotID = RobotID.getEnum(id);
 				ackMessage = new AckStraightBackMove(robotID);
@@ -714,6 +730,19 @@ public class Adaptor extends Thread {
 			bf.putInt(packetSize);
 			bf.putInt(robotID.getValue());
 			nodeID = reqPreciseMove.getNodeID();
+			bf.putInt(nodeID);
+			send(bf);
+			break;
+		case ReqFlatPreciseMove:
+			ReqFlatPreciseMove reqflatPreciseMove = (ReqFlatPreciseMove)message;
+			packetSize = 20;
+			
+			bf = ByteBuffer.allocate(packetSize).order(ByteOrder.LITTLE_ENDIAN);
+			bf.putInt(30000);
+			bf.putInt(messageType.getValue());
+			bf.putInt(packetSize);
+			bf.putInt(robotID.getValue());
+			nodeID = reqflatPreciseMove.getNodeID();
 			bf.putInt(nodeID);
 			send(bf);
 			break;

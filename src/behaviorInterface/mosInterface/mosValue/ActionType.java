@@ -8,7 +8,7 @@ public enum ActionType {
 	DoorOpen, 	DoorClose,
 	Login,
 	GuideMove,
-	PreciseMove,
+	PreciseMove, FlatPreciseMove,
 	StraightBackMove,
 	PalletizerStart, PalletizerStop,
 	EnterPalletizer, ExitPalletizer;

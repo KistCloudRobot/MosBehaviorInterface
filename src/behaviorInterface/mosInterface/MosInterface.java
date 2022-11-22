@@ -16,6 +16,7 @@ import behaviorInterface.message.request.ReqDoorClose;
 import behaviorInterface.message.request.ReqDoorOpen;
 import behaviorInterface.message.request.ReqEnterPalletizer;
 import behaviorInterface.message.request.ReqExitPalletizer;
+import behaviorInterface.message.request.ReqFlatPreciseMove;
 import behaviorInterface.message.request.ReqGuideMove;
 import behaviorInterface.message.request.ReqLoad;
 import behaviorInterface.message.request.ReqLogin;
@@ -117,6 +118,7 @@ public class MosInterface {
 		case AckEndResume:
 		case AckGuideMove:
 		case AckPreciseMove:
+		case AckFlatPreciseMove:
 		case AckStraightBackMove:
 		case AckPalletizerStart:
 		case AckPalletizerStop:
@@ -138,6 +140,7 @@ public class MosInterface {
 		case AckEndDoorClose:
 		case AckEndGuideMove:
 		case AckEndPreciseMove:
+		case AckEndFlatPreciseMove:
 		case AckEndStraightBackMove:
 		case AckEndPalletizerStart:
 		case AckEndPalletizerStop:
@@ -352,6 +355,18 @@ public class MosInterface {
 	public String preciseMove(String sender, String actionID, int nodeID) throws Exception {
 		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
 			this.waitingResponse = new ReqPreciseMove(sender, actionID, this.robotID, nodeID);
+			this.currentActionType = this.waitingResponse.getActionType();
+			this.adaptor.send(this.waitingResponse);
+			return this.waitingResponse.getResponse();
+		}
+		else {
+			return "(fail (actionID \"" + actionID + "\"))";
+		}
+	}
+	
+	public String flatPreciseMove(String sender, String actionID, int nodeID) throws Exception {
+		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
+			this.waitingResponse = new ReqFlatPreciseMove(sender, actionID, this.robotID, nodeID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
 			return this.waitingResponse.getResponse();

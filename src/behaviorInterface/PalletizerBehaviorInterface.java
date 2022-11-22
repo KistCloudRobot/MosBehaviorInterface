@@ -34,7 +34,7 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 		try {
 			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
-			ds.connect(brokerURL, dataSourceURI, BrokerType.ZEROMQ);
+			ds.connect(brokerURL, dataSourceURI, BrokerType.ACTIVEMQ);
 
 			mi = new MosInterface(RobotID.valueOf(this.palletizerID), this);
 			String[] mosComponents = mosURL.split(":");
