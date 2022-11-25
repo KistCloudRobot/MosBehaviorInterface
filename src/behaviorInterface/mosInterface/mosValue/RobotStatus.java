@@ -7,7 +7,7 @@ public enum RobotStatus {
 	Login(0), Ready(1), Move(2), Paused(3), Loading(4), Unloading(5),
 	ChargeIn(6), ChargeOut(7), Charging(8), ChargeStopping(9), 
 	Error(10), EmergencyStop(11),
-	GuideMove(12), PreciseMove(13), StraightBackMove(14);
+	GuideMove(12), PreciseMove(13), FlatPreciseMove(14), StraightBackMove(15);
 	
 	private final int status;
 	private static final Map<Integer, RobotStatus> BY_VALUE = new HashMap<>();
