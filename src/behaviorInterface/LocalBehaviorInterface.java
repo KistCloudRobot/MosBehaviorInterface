@@ -18,10 +18,12 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 
 	private String brokerURL;
 	private String mosURL;
+	private int brokerPort;
 	
-	public LocalBehaviorInterface(String brokerURL, String mosURL) {
+	public LocalBehaviorInterface(String brokerURL, int brokerPort, String mosURL) {
 		this.brokerURL = brokerURL;
 		this.mosURL = mosURL;
+		this.brokerPort = brokerPort;
 	}
 	
 	@Override
@@ -29,7 +31,7 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 		try {
 			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
-			ds.connect(brokerURL, dataSourceURI, BrokerType.ZEROMQ);
+			ds.connect(brokerURL, brokerPort, dataSourceURI, BrokerType.ZEROMQ);
 
 			mi = new MosInterface(this);
 			String[] mosComponents = mosURL.split(":");
@@ -134,12 +136,14 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 	public static void main(String[] args) {
 		String brokerURL = null;
 		String mosURL = null;
+		int port = 0;
 //		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
 //		String mosURL = System.getenv("MOS");
 //		brokerURL = "tcp://127.0.0.1:61316"
 		if(args == null) {
-			brokerURL = "tcp://127.0.0.1:61116";
+			brokerURL = "127.0.0.1";
 			mosURL = "127.0.0.1:30001";
+			port = 61116;
 		}
 		else {
 			brokerURL = args[0];
@@ -148,8 +152,8 @@ public class LocalBehaviorInterface extends BehaviorInterface {
 		
 		String BehaviorInterfaceURI = "agent://www.arbi.com/BehaviorInterface";
 		
-		BehaviorInterface bi = new LocalBehaviorInterface(brokerURL, mosURL);
+		BehaviorInterface bi = new LocalBehaviorInterface(brokerURL, port, mosURL);
 		
-		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
+		ArbiAgentExecutor.execute(brokerURL,port, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
 	}
 }

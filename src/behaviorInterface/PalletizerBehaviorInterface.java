@@ -22,11 +22,13 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 	private final String brokerURL;
 	private final String mosURL;
 	private final String palletizerID;
+	private final int brokerPort;
 	
-	public PalletizerBehaviorInterface(String brokerURL, String mosURL, String palletizerID) {
+	public PalletizerBehaviorInterface(String brokerURL, int brokerPort, String mosURL, String palletizerID) {
 		this.brokerURL = brokerURL;
 		this.mosURL = mosURL;
 		this.palletizerID = palletizerID;
+		this.brokerPort = brokerPort;
 	}
 	
 	@Override
@@ -34,7 +36,7 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 		try {
 			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
-			ds.connect(brokerURL, dataSourceURI, BrokerType.ACTIVEMQ);
+			ds.connect(brokerURL, brokerPort, dataSourceURI, BrokerType.ACTIVEMQ);
 
 			mi = new MosInterface(RobotID.valueOf(this.palletizerID), this);
 			String[] mosComponents = mosURL.split(":");
@@ -155,6 +157,7 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 		String palletizerID = null;
 		String brokerURL = null;
 		String mosURL = null;
+		int brokerPort = 0;
 //		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
 //		String mosURL = System.getenv("MOS");
 //		String brokerName = System.getenv("AGENT");
@@ -167,8 +170,9 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 //		}
 		if(args == null || args.length == 0) {
 			palletizerID = "Palletizer1";
-			brokerURL = "tcp://127.0.0.1:61116";
+			brokerURL = "127.0.0.1";
 			mosURL = "127.0.0.1:30001";
+			brokerPort = 61112;
 		}
 		else {
 			palletizerID = args[0];
@@ -178,9 +182,9 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 		
 		String BehaviorInterfaceURI = "agent://www.arbi.com/BehaviorInterface";
 
-		BehaviorInterface bi = new PalletizerBehaviorInterface(brokerURL, mosURL, palletizerID);
+		BehaviorInterface bi = new PalletizerBehaviorInterface(brokerURL, brokerPort, mosURL, palletizerID);
 		
-		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
+		ArbiAgentExecutor.execute(brokerURL, brokerPort, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
 		
 		try {
 //			Thread.sleep(5000);

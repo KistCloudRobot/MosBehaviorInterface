@@ -22,11 +22,13 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	private final String brokerURL;
 	private final String mosURL;
 	private final String robotID;
+	private final int brokerPort;
 	
-	public RobotBehaviorInterface(String brokerURL, String mosURL, String robotID) {
+	public RobotBehaviorInterface(String brokerURL, int brokerPort, String mosURL, String robotID) {
 		this.brokerURL = brokerURL;
 		this.mosURL = mosURL;
 		this.robotID = robotID;
+		this.brokerPort = brokerPort;
 	}
 	
 	@Override
@@ -34,7 +36,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		try {
 			String dataSourceURI = "ds://www.arbi.com/BehaviorInterface";
 			ds = new DataSource();
-			ds.connect(brokerURL, dataSourceURI, BrokerType.ACTIVEMQ);
+			ds.connect(brokerURL, brokerPort, dataSourceURI, BrokerType.ACTIVEMQ);
 
 			mi = new MosInterface(this.robotID, this);
 			String[] mosComponents = mosURL.split(":");
@@ -224,6 +226,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		String robotID = null;
 		String brokerURL = null;
 		String mosURL = null;
+		int brokerPort = 0;
 //		String brokerURL = "tcp://" + System.getenv("JMS_BROKER");
 //		String mosURL = System.getenv("MOS");
 //		String brokerName = System.getenv("AGENT");
@@ -236,8 +239,9 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 //		}
 		if(args == null) {
 			robotID = "AMR_LIFT1";
-			brokerURL = "tcp://172.16.165.141:61116";
+			brokerURL = "172.16.165.141";
 			mosURL = "127.0.0.1:30001";
+			brokerPort = 61112;
 		}
 		else {
 			robotID = args[0];
@@ -247,8 +251,8 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		
 		String BehaviorInterfaceURI = "agent://www.arbi.com/BehaviorInterface";
 
-		BehaviorInterface bi = new RobotBehaviorInterface(brokerURL, mosURL, robotID);
+		BehaviorInterface bi = new RobotBehaviorInterface(brokerURL, brokerPort, mosURL, robotID);
 		
-		ArbiAgentExecutor.execute(brokerURL, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
+		ArbiAgentExecutor.execute(brokerURL, brokerPort, BehaviorInterfaceURI, bi, BrokerType.ZEROMQ);
 	}
 }
