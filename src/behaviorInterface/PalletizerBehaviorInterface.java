@@ -71,6 +71,29 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 //		}
 	}
 	
+	public void onData(String sender, String data) {
+		System.out.println("[onData]\t: " + data);
+		try {
+			GeneralizedList gl = GLFactory.newGLFromGLString(data);
+			ActionType actionType = ActionType.valueOf(gl.getName());
+			String actionID = gl.getExpression(0).asValue().stringValue();
+			int nodeID = 0;
+			switch(actionType) {
+			case PalletizerStart:
+				this.mi.palletizerStart(sender, actionID);
+				break;
+			case PalletizerStop:
+				this.mi.palletizerStop(sender, actionID);
+				break;
+			default:
+				System.out.println("what? " + data);
+				break;
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public String onRequest(String sender, String request) {
 		System.out.println("[request]\t: " + request.toString());
@@ -82,12 +105,6 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 			int nodeID = 0;
 			String response = null;
 			switch(actionType) {
-			case PalletizerStart:
-				response = this.mi.palletizerStart(sender, actionID);
-				break;
-			case PalletizerStop:
-				response = this.mi.palletizerStop(sender, actionID);
-				break;
 			case EnterPalletizer:
 				robotID = gl.getExpression(1).asValue().stringValue();
 				nodeID = gl.getExpression(2).asValue().intValue();

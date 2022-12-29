@@ -73,7 +73,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	
 	@Override
 	public String onRequest(String sender, String request) {
-		System.out.println("[request]\t: " + request.toString());
+		System.out.println("[request]\t: " + request);
 		try {
 			GeneralizedList gl = GLFactory.newGLFromGLString(request);
 			ActionType actionType = ActionType.valueOf(gl.getName());
@@ -157,9 +157,9 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		sendRobotPosition(robotID, x, y);
 		sendRobotLoading(robotID, loading);
 		sendRobotSatus(robotID, status);
-		sendRobotSpeed(robotID, speed);
-		sendRobotBattery(robotID, battery);
-		sendRobotDegree(robotID, theta);
+//		sendRobotSpeed(robotID, speed);
+//		sendRobotBattery(robotID, battery);
+//		sendRobotDegree(robotID, theta);
 	}
 	
 	@Override

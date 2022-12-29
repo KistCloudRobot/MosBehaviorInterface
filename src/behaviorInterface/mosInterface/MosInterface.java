@@ -120,8 +120,6 @@ public class MosInterface {
 		case AckPreciseMove:
 		case AckFlatPreciseMove:
 		case AckStraightBackMove:
-		case AckPalletizerStart:
-		case AckPalletizerStop:
 //			if(this.robotID != null){
 //				System.out.println("[" + robotID.toString() + "] " + messageType);
 //			}
@@ -129,6 +127,10 @@ public class MosInterface {
 //				System.out.println("[LOCAL] " + messageType);
 //			}
 			this.waitingResponse.setResponse(message);
+			break;
+
+		case AckPalletizerStart:
+		case AckPalletizerStop:
 			break;
 		case AckEndMove:
 		case AckEndCancelMove:
@@ -388,27 +390,31 @@ public class MosInterface {
 		}
 	}
 	
-	public String palletizerStart(String sender, String actionID) throws Exception {
+	public void palletizerStart(String sender, String actionID) throws Exception {
 		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
 			this.waitingResponse = new ReqPalletizerStart(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+//			return this.waitingResponse.getResponse();
 		}
 		else {
-			return "(fail (actionID \"" + actionID + "\"))";
+			System.out.println("palletizer start failed");
+			return;
+//			return "(fail (actionID \"" + actionID + "\"))";
 		}
 	}
 	
-	public String palletizerStop(String sender, String actionID) throws Exception {
+	public void palletizerStop(String sender, String actionID) throws Exception {
 		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
 			this.waitingResponse = new ReqPalletizerStop(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+//			return this.waitingResponse.getResponse();
 		}
 		else {
-			return "(fail (actionID \"" + actionID + "\"))";
+			System.out.println("palletizer stop failed");
+			return;
+//			return "(fail (actionID \"" + actionID + "\"))";
 		}
 	}
 	
