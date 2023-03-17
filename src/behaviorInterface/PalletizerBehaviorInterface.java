@@ -73,6 +73,7 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 //		}
 	}
 	
+	@Override
 	public void onData(String sender, String data) {
 		System.out.println("[onData]\t: " + data);
 		try {
