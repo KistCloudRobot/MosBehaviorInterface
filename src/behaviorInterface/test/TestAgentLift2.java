@@ -6,6 +6,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+//import behaviorInterface.test.TestAgentLift1.TestAgent;
 import kr.ac.uos.ai.arbi.BrokerType;
 import kr.ac.uos.ai.arbi.agent.ArbiAgent;
 import kr.ac.uos.ai.arbi.agent.ArbiAgentExecutor;
@@ -99,7 +100,7 @@ public class TestAgentLift2 {
 			@Override
 			public void run() {
 				System.out.println("start!");
-				String reqMsg = "(Move (actionID \"" + UUID.randomUUID().toString() + "\") (path";
+				String reqMsg = "(Move \"" + UUID.randomUUID().toString() + "\" (path";
 				for(int path : paths) {
 					reqMsg += " " + path;
 				}
@@ -115,7 +116,7 @@ public class TestAgentLift2 {
 			
 			@Override
 			public void run() {
-				String reqMsg = "(CancelMove (actionID \"" + UUID.randomUUID().toString() + "\"))";
+				String reqMsg = "(CancelMove \"" + UUID.randomUUID().toString() + "\")";
 				System.out.println("response : " + request(behaviorInterfaceURI, reqMsg));
 			}
 		}
@@ -154,7 +155,7 @@ public class TestAgentLift2 {
 			
 			@Override
 			public void run() {
-				String reqMsg = "(Load (actionID \"" + UUID.randomUUID().toString() + "\") " + this.nodeID + ")";
+				String reqMsg = "(Load \"" + UUID.randomUUID().toString() + "\" " + this.nodeID + ")";
 				System.out.println("response : " + request(behaviorInterfaceURI, reqMsg));
 			}
 		}
@@ -169,7 +170,7 @@ public class TestAgentLift2 {
 			
 			@Override
 			public void run() {
-				String reqMsg = "(Unload (actionID \"" + UUID.randomUUID().toString() + "\") " + this.nodeID + ")";
+				String reqMsg = "(Unload \"" + UUID.randomUUID().toString() + "\" " + this.nodeID + ")";
 				System.out.println("response : " + request(behaviorInterfaceURI, reqMsg));
 			}
 		}
@@ -216,7 +217,7 @@ public class TestAgentLift2 {
 			
 			@Override
 			public void run() {
-				String reqMsg = "(GuideMove (actionID \"" + UUID.randomUUID().toString() + "\") " + this.node + " \"" + this.direction + "\")";
+				String reqMsg = "(GuideMove \"" + UUID.randomUUID().toString() + "\" " + this.node + " \"" + this.direction + "\")";
 				System.out.println("response : " + request(behaviorInterfaceURI, reqMsg));
 			}
 		}
@@ -232,7 +233,7 @@ public class TestAgentLift2 {
 			
 			@Override
 			public void run() {
-				String reqMsg = "(PreciseMove (actionID \"" + UUID.randomUUID().toString() + "\") " + this.node + ")";
+				String reqMsg = "(PreciseMove \"" + UUID.randomUUID().toString() + "\" " + this.node + ")";
 				System.out.println("response : " + request(behaviorInterfaceURI, reqMsg));
 			}
 		}
@@ -248,7 +249,7 @@ public class TestAgentLift2 {
 			
 			@Override
 			public void run() {
-				String reqMsg = "(StraightBackMove (actionID \"" + UUID.randomUUID().toString() + "\") " + this.node + ")";
+				String reqMsg = "(StraightBackMove \"" + UUID.randomUUID().toString() + "\" " + this.node + ")";
 				System.out.println("response : " + request(behaviorInterfaceURI, reqMsg));
 			}
 		}
@@ -265,14 +266,24 @@ public class TestAgentLift2 {
 				System.out.println("action result : " + this.getResponse());
 				new StraightBackMoveTask(115);
 				System.out.println("action result : " + this.getResponse());
-				new MoveTask(114, 113, 112, 111, 109, 107, 106, 105, 104, 103, 102, 101, 142, 146);
+				new MoveTask(116, 117, 118, 119, 120);
 				System.out.println("action result : " + this.getResponse());
-				new UnloadTask(26);
-				System.out.println("action result : " + this.getResponse());
-				new StraightBackMoveTask(142);
-				System.out.println("action result : " + this.getResponse());
-				new MoveTask(101, 102, 103, 104, 105, 106, 107, 109, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 156);
-				System.out.println("action result : " + this.getResponse());
+//				new MoveTask(120, 119, 118, 117, 116, 115);
+//				System.out.println("action result : " + this.getResponse());
+//				new PreciseMoveTask(20);
+//				System.out.println("action result : " + this.getResponse());
+//				new LoadTask(20);
+//				System.out.println("action result : " + this.getResponse());
+//				new StraightBackMoveTask(115);
+//				System.out.println("action result : " + this.getResponse());
+//				new MoveTask(114, 113, 112, 111, 109, 107, 106, 105, 104, 103, 102, 101, 142, 146);
+//				System.out.println("action result : " + this.getResponse());
+//				new UnloadTask(26);
+//				System.out.println("action result : " + this.getResponse());
+//				new StraightBackMoveTask(142);
+//				System.out.println("action result : " + this.getResponse());
+//				new MoveTask(101, 102, 103, 104, 105, 106, 107, 109, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 156);
+//				System.out.println("action result : " + this.getResponse());
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -283,6 +294,6 @@ public class TestAgentLift2 {
 	}
 	
 	public static void main(String[] args) {
-		ArbiAgentExecutor.execute("tcp://172.16.165.141:61115", "agent://www.arbi.com/TestAgent", new TestAgent("Lift2"), BrokerType.ZEROMQ);
+		ArbiAgentExecutor.execute("172.16.165.164", 61115,"agent://www.arbi.com/Test", new TestAgent("Lift2"), BrokerType.ACTIVEMQ);
 	}
 }
