@@ -8,7 +8,7 @@ public abstract class BehaviorInterface extends ArbiAgent {
 	public abstract void palletizerPackingFinish(String palletizerID, int nodeID);
 	
 	public void sendMessage(String receiver, String message) throws Exception {
-		System.out.println("[send]\t\t: " + receiver + " --> " + message + "\n");
+		System.out.println("[send]\t\t: " + receiver + " --> " + message + "\ttimestamp :" + System.currentTimeMillis() + "\n");
 		this.send(receiver, message);
 	}
 	

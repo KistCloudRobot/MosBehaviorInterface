@@ -347,7 +347,7 @@ public class Adaptor extends Thread {
 		}
 		else if(isReceiver(protocolID, messageType, id)) {
 			if(messageType != MessageType.RTSR) {
-				System.out.println("[" + this.robotID + "] " + messageType.toString());
+				System.out.println("[" + this.robotID + "] " + messageType.toString() + "timestamp :" + System.currentTimeMillis());
 			}
 			switch(messageType) {
 			case RTSR:

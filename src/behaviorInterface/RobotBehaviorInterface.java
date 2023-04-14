@@ -75,7 +75,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	
 	@Override
 	public String onRequest(String sender, String request) {
-		System.out.println("[request]\t: " + request);
+		System.out.println("[request]\t: " + request + "timestamp :" + System.currentTimeMillis());
 		try {
 			GeneralizedList gl = GLFactory.newGLFromGLString(request);
 			ActionType actionType = ActionType.valueOf(gl.getName());
@@ -139,7 +139,7 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 				response = "(fail)";
 				break;
 			}
-			System.out.println("[response]\t: " + response);
+			System.out.println("[response]\t: " + response + "timestamp :" + System.currentTimeMillis());
 			System.out.println();
 			return response;
 		} 
