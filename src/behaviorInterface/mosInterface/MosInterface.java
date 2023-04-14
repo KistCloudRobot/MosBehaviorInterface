@@ -133,6 +133,12 @@ public class MosInterface {
 		case AckPalletizerStop:
 			break;
 		case AckEndMove:
+			if(this.waitingResponse instanceof ReqCancelMove) {
+				this.pausedWaitingResponse.setResponse(message);
+				this.behaviorInterface.sendMessage(this.pausedWaitingResponse.getSender(), this.pausedWaitingResponse.getResponse());
+				this.pausedWaitingResponse = null;
+				break;
+			}
 		case AckEndCancelMove:
 		case AckEndLoad:
 		case AckEndUnload:
