@@ -159,14 +159,19 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 		sendRobotPosition(robotID, x, y);
 		sendRobotLoading(robotID, loading);
 		sendRobotSatus(robotID, status);
-//		sendRobotSpeed(robotID, speed);
-//		sendRobotBattery(robotID, battery);
+		sendRobotSpeed(robotID, speed);
+		sendRobotBattery(robotID, battery);
 //		sendRobotDegree(robotID, theta);
 	}
 	
 	@Override
 	public void palletizerPackingFinish(String palletizerID, int nodeID) {
 		System.out.println("what? palletizer packing finish");
+	}
+	
+	@Override
+	public void palletizerReleasingFinish(String palletizerID, int nodeID) {
+		System.out.println("what? palletizer releasing finish");
 	}
 	
 	private void sendRobotPosition(String robotID, float x, float y) {
@@ -195,8 +200,8 @@ public class RobotBehaviorInterface extends BehaviorInterface {
 	}
 	
 	private void sendRobotSpeed(String robotID, int speed) {
-		String before = "(robotSpeed \"" + robotID + "\" $speed)";
-		String after = "(robotSpeed \"" + robotID + "\" " + speed + ")";
+		String before = "(robotVelocity \"" + robotID + "\" $speed)";
+		String after = "(robotVelocity \"" + robotID + "\" " + speed + ")";
 		String updateGL = "(update " + before + " " + after + ")";
 //		System.out.println(updateGL);
 		ds.updateFact(updateGL);

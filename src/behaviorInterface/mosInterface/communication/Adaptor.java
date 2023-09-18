@@ -24,6 +24,7 @@ import behaviorInterface.message.acknowledge.AckEndFlatPreciseMove;
 import behaviorInterface.message.acknowledge.AckEndGuideMove;
 import behaviorInterface.message.acknowledge.AckEndLoad;
 import behaviorInterface.message.acknowledge.AckEndLogin;
+import behaviorInterface.message.acknowledge.AckEndMessage;
 import behaviorInterface.message.acknowledge.AckEndMove;
 import behaviorInterface.message.acknowledge.AckEndPalletizerStart;
 import behaviorInterface.message.acknowledge.AckEndPalletizerStop;
@@ -46,6 +47,7 @@ import behaviorInterface.message.acknowledge.AckResume;
 import behaviorInterface.message.acknowledge.AckStraightBackMove;
 import behaviorInterface.message.acknowledge.AckUnload;
 import behaviorInterface.message.acknowledge.PalletizerPackingFinish;
+import behaviorInterface.message.acknowledge.PalletizerReleasingFinish;
 import behaviorInterface.message.acknowledge.PersonCall;
 import behaviorInterface.message.acknowledge.RTSR;
 import behaviorInterface.message.request.ReqCancelMove;
@@ -218,6 +220,7 @@ public class Adaptor extends Thread {
 			switch(messageType) {
 			case RTSR:
 			case PalletizerPackingFinish:
+			case PalletizerReleasingFinish:
 			case AckMove:
 			case AckEndMove:
 			case AckCancelMove:
@@ -275,6 +278,7 @@ public class Adaptor extends Thread {
 		int id = byteBuffer.getInt();
 
 		AckMessage ackMessage;
+		AckEndMessage ackEndMessage;
 		RobotID robotID;
 		RobotID palletizerID;
 		DoorID doorID;
@@ -306,8 +310,8 @@ public class Adaptor extends Thread {
 			case AckEndDoorOpen:
 				doorID = DoorID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndDoorOpen(doorID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndDoorOpen(doorID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckDoorClose:
 				doorID = DoorID.getEnum(id);
@@ -317,14 +321,8 @@ public class Adaptor extends Thread {
 			case AckEndDoorClose:
 				doorID = DoorID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndDoorClose(doorID, result);
-				this.mi.onMessage(ackMessage);
-				break;
-			case PersonCall:
-				int locationID = id;
-				int callID = byteBuffer.getInt();
-				ackMessage = new PersonCall(locationID, callID);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndDoorClose(doorID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckLogin:
 				robotID = RobotID.getEnum(id);
@@ -337,8 +335,8 @@ public class Adaptor extends Thread {
 				result = byteBuffer.getInt();
 				robotID = RobotID.getEnum(id);
 				if(robotID == RobotID.LOCAL) {
-					ackMessage = new AckEndLogin(robotID, result);
-					this.mi.onMessage(ackMessage);
+					ackEndMessage = new AckEndLogin(robotID, result);
+					this.mi.onMessage(ackEndMessage);
 				}
 				break;
 			default:
@@ -372,8 +370,8 @@ public class Adaptor extends Thread {
 			case AckEndMove:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndMove(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndMove(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckCancelMove:
 				robotID = RobotID.getEnum(id);
@@ -383,8 +381,8 @@ public class Adaptor extends Thread {
 			case AckEndCancelMove:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndCancelMove(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndCancelMove(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckLoad:
 				robotID = RobotID.getEnum(id);
@@ -394,8 +392,8 @@ public class Adaptor extends Thread {
 			case AckEndLoad:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndLoad(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndLoad(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckUnload:
 				robotID = RobotID.getEnum(id);
@@ -405,8 +403,8 @@ public class Adaptor extends Thread {
 			case AckEndUnload:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndUnload(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndUnload(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckCharge:
 				robotID = RobotID.getEnum(id);
@@ -416,8 +414,8 @@ public class Adaptor extends Thread {
 			case AckEndCharge:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndCharge(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndCharge(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckChargeStop:
 				robotID = RobotID.getEnum(id);
@@ -427,8 +425,8 @@ public class Adaptor extends Thread {
 			case AckEndChargeStop:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndChargeStop(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndChargeStop(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckPause:
 				robotID = RobotID.getEnum(id);
@@ -437,8 +435,8 @@ public class Adaptor extends Thread {
 				break;
 			case AckEndPause:
 				robotID = RobotID.getEnum(id);
-				ackMessage = new AckEndPause(robotID);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndPause(robotID);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckResume:
 				robotID = RobotID.getEnum(id);
@@ -447,8 +445,8 @@ public class Adaptor extends Thread {
 				break;
 			case AckEndResume:
 				robotID = RobotID.getEnum(id);
-				ackMessage = new AckEndResume(robotID);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndResume(robotID);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckLogin:
 				ackMessage = new AckLogin(RobotID.getEnum(id));
@@ -456,8 +454,8 @@ public class Adaptor extends Thread {
 				break;
 			case AckEndLogin:
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndLogin(RobotID.getEnum(id), result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndLogin(RobotID.getEnum(id), result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckGuideMove:
 				robotID = RobotID.getEnum(id);
@@ -467,8 +465,8 @@ public class Adaptor extends Thread {
 			case AckEndGuideMove:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndGuideMove(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndGuideMove(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckPreciseMove:
 				robotID = RobotID.getEnum(id);
@@ -478,8 +476,8 @@ public class Adaptor extends Thread {
 			case AckEndPreciseMove:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndPreciseMove(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndPreciseMove(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckFlatPreciseMove:
 				robotID = RobotID.getEnum(id);
@@ -489,8 +487,8 @@ public class Adaptor extends Thread {
 			case AckEndFlatPreciseMove:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndFlatPreciseMove(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndFlatPreciseMove(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckStraightBackMove:
 				robotID = RobotID.getEnum(id);
@@ -500,8 +498,8 @@ public class Adaptor extends Thread {
 			case AckEndStraightBackMove:
 				robotID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndStraightBackMove(robotID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndStraightBackMove(robotID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckPalletizerStart:
 				palletizerID = RobotID.getEnum(id);
@@ -511,8 +509,8 @@ public class Adaptor extends Thread {
 			case AckEndPalletizerStart:
 				palletizerID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndPalletizerStart(palletizerID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndPalletizerStart(palletizerID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case AckPalletizerStop:
 				palletizerID = RobotID.getEnum(id);
@@ -522,13 +520,19 @@ public class Adaptor extends Thread {
 			case AckEndPalletizerStop:
 				palletizerID = RobotID.getEnum(id);
 				result = byteBuffer.getInt();
-				ackMessage = new AckEndPalletizerStop(palletizerID, result);
-				this.mi.onMessage(ackMessage);
+				ackEndMessage = new AckEndPalletizerStop(palletizerID, result);
+				this.mi.onMessage(ackEndMessage);
 				break;
 			case PalletizerPackingFinish:
 				palletizerID = RobotID.getEnum(id);
 				nodeID = byteBuffer.getInt();
 				ackMessage = new PalletizerPackingFinish(palletizerID, nodeID);
+				this.mi.onMessage(ackMessage);
+				break;
+			case PalletizerReleasingFinish:
+				palletizerID = RobotID.getEnum(id);
+				nodeID = byteBuffer.getInt();
+				ackMessage = new PalletizerReleasingFinish(palletizerID, nodeID);
 				this.mi.onMessage(ackMessage);
 				break;
 			default:

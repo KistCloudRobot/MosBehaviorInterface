@@ -24,17 +24,14 @@ public class ReqLogin extends ReqMessage {
 	}
 	
 	@Override
-	public String makeResponse() {
+	public String makeAckEndResponse() {
 		String response = null;
-		if(this.responseMessage instanceof AckEndLogin) {
-			int result = ((AckEndLogin) this.responseMessage).getResult();
-			if(result == 0) {
-				response = "success";
-			}
-			else {
-				response = "fail";
-			}
-			
+		int result = this.ackEndMessage.getResult();
+		if(result == 0) {
+			response = "success";
+		}
+		else {
+			response = "fail";
 		}
 		return response;
 	}

@@ -17,12 +17,14 @@ import kr.ac.uos.ai.arbi.model.GeneralizedList;
 public abstract class ReqMessage extends BehaviorInterfaceMessage {
 	private String sender;
 	private String actionID;
-	protected AckMessage responseMessage;
+	protected AckMessage ackMessage;
+	protected AckEndMessage ackEndMessage;
 
-	private final ResponseLock responceLock;
+	private final ResponseLock ackLock, ackEndLock;
 
 	public ReqMessage(String sender, String actionID) {
-		responceLock = new ResponseLock();
+		this.ackLock = new ResponseLock();
+		this.ackEndLock = new ResponseLock();
 		this.sender = sender;
 		this.actionID = actionID;
 	}
@@ -50,63 +52,89 @@ public abstract class ReqMessage extends BehaviorInterfaceMessage {
 		}
 	}
 	
-	public void setResponse(AckMessage responseMessage) {
-		responceLock.lock();
+	public void setAckMessage(AckMessage ackMessage) {
+		this.ackLock.lock();
 		try {
-			this.responseMessage = responseMessage;
-			responceLock.signal();
+			this.ackMessage = ackMessage;
+			this.ackLock.signal();
 		} finally {
-			responceLock.unlock();
+			this.ackLock.unlock();
 		}
 	}
 	
-	public String makeResponse() {
+	public void setAckEndMessage(AckEndMessage ackEndMessage) {
+		this.ackEndLock.lock();
+		try {
+			this.ackEndMessage = ackEndMessage;
+			this.ackEndLock.signal();
+		} finally {
+			this.ackEndLock.unlock();
+		}
+	}
+	
+	public String makeAckResponse() {
+		return "(ok)";
+	}
+	
+	public String makeAckEndResponse() {
 		String response = "(fail)";
-		if(this.responseMessage instanceof AckEndMessage) {
-			Expression acionID = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
-			Expression actionResult;
-			int result = ((AckEndMessage) this.responseMessage).getResult();
-			if(result == 0) {
-				actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
-			}
-			else {
-				actionResult = GLFactory.newExpression(GLFactory.newValue("fail"));
-			}
-			
-			GeneralizedList gl = GLFactory.newGL("ActionResult", acionID, actionResult);
-			response = GLFactory.unescape(gl.toString());
-		}
-		else if(this.responseMessage instanceof AckMessage) {
-			response = "(ok)";
-		}
+		Expression acionID = GLFactory.newExpression(GLFactory.newValue(this.getActionID()));
+		Expression actionResult;
+		
+		int result = this.ackEndMessage.getResult();
+		if(result == 0) actionResult = GLFactory.newExpression(GLFactory.newValue("success"));
+		else actionResult = GLFactory.newExpression(GLFactory.newValue("fail"));
+		
+		GeneralizedList gl = GLFactory.newGL("ActionResult", acionID, actionResult);
+		response = GLFactory.unescape(gl.toString());
 		return response;
 	}
 	
-	public String getResponse() {
-		responceLock.lock();
+	public String getAckResponse() {
+		this.ackLock.lock();
 		String response = null;
 		try {
 			do {
-				if(this.responseMessage == null) {
-					responceLock.await();
-				}
-				if(this.responseMessage != null) {
-					response = this.makeResponse();
+				if(this.ackMessage == null) this.ackLock.await();
+				if(this.ackMessage != null) {
+					response = this.makeAckResponse();
 					if(response == null) {
-						this.responseMessage = null;
+						this.ackMessage = null;
 						continue;
 					}
 				}
-			} while(responseMessage == null);
+			} while(this.ackMessage == null);
 		} 
 		catch(InterruptedException ignore) {
 			
 		}
 		finally {
-			responceLock.unlock();
+			this.ackLock.unlock();
 		}
-
-		this.responseMessage = null;
+		return response;
+	}
+	
+	public String getAckEndResponse() {
+		this.ackEndLock.lock();
+		String response = null;
+		try {
+			do {
+				if(this.ackEndMessage == null) this.ackEndLock.await();
+				if(this.ackEndMessage != null) {
+					response = this.makeAckEndResponse();
+					if(response == null) {
+						this.ackEndMessage = null;
+						continue;
+					}
+				}
+			} while(ackEndMessage == null);
+		} 
+		catch(InterruptedException ignore) {
+			
+		}
+		finally {
+			this.ackEndLock.unlock();
+		}
 		return response;
 	}
 	

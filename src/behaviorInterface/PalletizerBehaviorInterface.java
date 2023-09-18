@@ -80,14 +80,18 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 			GeneralizedList gl = GLFactory.newGLFromGLString(data);
 			ActionType actionType = ActionType.valueOf(gl.getName());
 			String actionID = gl.getExpression(0).asValue().stringValue();
+			String robotID = null;
 			int nodeID = 0;
 			switch(actionType) {
-			case PalletizerStart:
-				this.mi.palletizerStart(sender, actionID);
+			case EnterPalletizer:
+				robotID = gl.getExpression(1).asValue().stringValue();
+				nodeID = gl.getExpression(2).asValue().intValue();
 				break;
-			case PalletizerStop:
-				this.mi.palletizerStop(sender, actionID);
+			case ExitPalletizer:
+				robotID = gl.getExpression(1).asValue().stringValue();
+				nodeID = gl.getExpression(2).asValue().intValue();
 				break;
+
 			default:
 				System.out.println("what? " + data);
 				break;
@@ -104,19 +108,14 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 			GeneralizedList gl = GLFactory.newGLFromGLString(request);
 			ActionType actionType = ActionType.valueOf(gl.getName());
 			String actionID = gl.getExpression(0).asValue().stringValue();
-			String robotID = null;
-			int nodeID = 0;
+
 			String response = null;
 			switch(actionType) {
-			case EnterPalletizer:
-				robotID = gl.getExpression(1).asValue().stringValue();
-				nodeID = gl.getExpression(2).asValue().intValue();
-				response = this.mi.enterPalletizer(sender, actionID, RobotID.valueOf(robotID), nodeID);
+			case PalletizerStart:
+				response = this.mi.palletizerStart(sender, actionID);
 				break;
-			case ExitPalletizer:
-				robotID = gl.getExpression(1).asValue().stringValue();
-				nodeID = gl.getExpression(2).asValue().intValue();
-				response = this.mi.exitPalletizer(sender, actionID, RobotID.valueOf(robotID), nodeID);
+			case PalletizerStop:
+				response = this.mi.palletizerStop(sender, actionID);
 				break;
 			default:
 				response = "(fail)";
@@ -147,6 +146,12 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 	public void palletizerPackingFinish(String palletizerID, int nodeID) {
 		System.out.println("palletizerPackingFinish " + palletizerID + " " + nodeID);
 		this.send("agent://www.arbi.com/TaskManager", "(palletizerPackingFinish \"" + palletizerID + "\" " + nodeID + ")");
+	}
+	
+	@Override
+	public void palletizerReleasingFinish(String palletizerID, int nodeID) {
+		System.out.println("palletizerReleasingFinish " + palletizerID + " " + nodeID);
+		this.send("agent://www.arbi.com/TaskManager", "(palletizerReleasingFinish \"" + palletizerID + "\" " + nodeID + ")");
 	}
 	
 	public void sendPersonCall(int locationID, int cmdID) {

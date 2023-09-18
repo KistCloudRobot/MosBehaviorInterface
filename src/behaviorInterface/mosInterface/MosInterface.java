@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.List;
 
 import behaviorInterface.BehaviorInterface;
+import behaviorInterface.message.acknowledge.AckEndMessage;
 import behaviorInterface.message.acknowledge.AckEndMove;
 import behaviorInterface.message.acknowledge.AckMessage;
 import behaviorInterface.message.acknowledge.PalletizerPackingFinish;
+import behaviorInterface.message.acknowledge.PalletizerReleasingFinish;
 import behaviorInterface.message.acknowledge.PersonCall;
 import behaviorInterface.message.acknowledge.RTSR;
 import behaviorInterface.message.request.ReqCancelMove;
@@ -88,23 +90,21 @@ public class MosInterface {
 			String loading;
 			if(rtsr.isLoading()) loading = "Loading";
 			else loading = "Unloading";
-//			System.out.println("RTSR x : " + rtsr.getX());
-//			System.out.println("RTSR y : " + rtsr.getY());
 			behaviorInterface.onRTSR(rtsr.getRobotID().toString(), rtsr.getRobotStatus().toString(), rtsr.getX(), rtsr.getY(), rtsr.getTheta(), rtsr.getSpeed(), rtsr.getBattery(), loading);
 			break;
 		case PalletizerPackingFinish:
-			PalletizerPackingFinish msg = (PalletizerPackingFinish)message;
-			behaviorInterface.palletizerPackingFinish(msg.getPalletizerID().toString(), msg.getNodeID());
+			PalletizerPackingFinish palletizerPackingFinish = (PalletizerPackingFinish)message;
+			behaviorInterface.palletizerPackingFinish(palletizerPackingFinish.getPalletizerID().toString(), palletizerPackingFinish.getNodeID());
+			break;
+		case PalletizerReleasingFinish:
+			PalletizerReleasingFinish palletizerReleasingFinish = (PalletizerReleasingFinish)message;
+			behaviorInterface.palletizerReleasingFinish(palletizerReleasingFinish.getPalletizerID().toString(), palletizerReleasingFinish.getNodeID());
 			break;
 		case AckPause:
 		case AckResume:
 		case AckLogin:
-//			if(this.robotID == null) {
-//				System.out.println("[LOCAL] " + messageType);
-//			}
-//			else {
-//				System.out.println("[" + robotID.toString() + "] " + messageType);
-//			}
+		case AckPalletizerStart:
+		case AckPalletizerStop:
 			break;
 		case AckMove:
 		case AckCancelMove:
@@ -114,32 +114,29 @@ public class MosInterface {
 		case AckChargeStop:
 		case AckDoorOpen:
 		case AckDoorClose:
-		case AckEndPause:
-		case AckEndResume:
 		case AckGuideMove:
 		case AckPreciseMove:
 		case AckFlatPreciseMove:
 		case AckStraightBackMove:
-//			if(this.robotID != null){
-//				System.out.println("[" + robotID.toString() + "] " + messageType);
-//			}
-//			else {
-//				System.out.println("[LOCAL] " + messageType);
-//			}
-			this.waitingResponse.setResponse(message);
+			this.waitingResponse.setAckMessage(message);
 			break;
-
-		case AckPalletizerStart:
-		case AckPalletizerStop:
-			break;
+		default:
+			System.err.println("[" + robotID.toString() + "] " + messageType + " error");
+		}
+	}
+	public void onMessage(AckEndMessage message) throws Exception {
+		MessageType messageType = message.getType();
+		switch(messageType) {
 		case AckEndMove:
 			if(this.waitingResponse instanceof ReqCancelMove) {
-				this.pausedWaitingResponse.setResponse(message);
-				this.behaviorInterface.sendMessage(this.pausedWaitingResponse.getSender(), this.pausedWaitingResponse.getResponse());
+				this.pausedWaitingResponse.setAckEndMessage(message);
+				this.behaviorInterface.sendMessage(this.pausedWaitingResponse.getSender(), this.pausedWaitingResponse.getAckEndResponse());
 				this.pausedWaitingResponse = null;
 				break;
 			}
 		case AckEndCancelMove:
+		case AckEndPause:
+		case AckEndResume:
 		case AckEndLoad:
 		case AckEndUnload:
 		case AckEndCharge:
@@ -152,35 +149,14 @@ public class MosInterface {
 		case AckEndStraightBackMove:
 		case AckEndPalletizerStart:
 		case AckEndPalletizerStop:
-//			if(this.robotID == null) {
-//				System.out.println("[LOCAL] " + messageType);
-//			}
-//			else {
-//				System.out.println("[" + robotID.toString() + "] " + messageType);
-//			}
-			this.waitingResponse.setResponse(message);
-			this.behaviorInterface.sendMessage(this.waitingResponse.getSender(), this.waitingResponse.getResponse());
+			this.waitingResponse.setAckEndMessage(message);
+			this.behaviorInterface.sendMessage(this.waitingResponse.getSender(), this.waitingResponse.getAckEndResponse());
 			this.currentActionType = null;
 			this.waitingResponse = null;
 			break;
 		case AckEndLogin:
-			this.waitingResponse.setResponse(message);
+			this.waitingResponse.setAckEndMessage(message);
 			break;
-		case PersonCall:
-			if(this.robotID == null) {
-				System.out.println("[LOCAL] " + messageType);
-			}
-			else {
-				System.out.println("[" + robotID.toString() + "] " + messageType);
-			}
-			PersonCall personCallMessage = (PersonCall)message;
-			int locationID = personCallMessage.getLocationID();
-			int callID = personCallMessage.getCallID();
-			this.behaviorInterface.sendPersonCall(locationID, callID);
-			this.waitingResponse = null;
-			break;
-		default:
-			System.out.println("[" + robotID.toString() + "] " + messageType + " error");
 		}
 	}
 	
@@ -188,7 +164,7 @@ public class MosInterface {
 		if(!this.isLogin) {
 			this.waitingResponse = new ReqLogin(robotID);
 			this.adaptor.send(this.waitingResponse);
-			String response = this.waitingResponse.getResponse();
+			String response = this.waitingResponse.getAckEndResponse();
 			this.waitingResponse = null;
 			this.currentActionType = null;
 			if(response == "success") {
@@ -207,7 +183,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqMove(sender, actionID, this.robotID, pathSize, path);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail (actionID \"" + actionID + "\"))";
@@ -220,14 +196,14 @@ public class MosInterface {
 			this.waitingResponse = new ReqCancelMove(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			String response = this.waitingResponse.getResponse();
+			String response = this.waitingResponse.getAckResponse();
 			if(response.contains("fail")) {
 				this.waitingResponse = this.pausedWaitingResponse;
 				this.pausedWaitingResponse = null;
 			}
 			else {
 				if(this.pausedWaitingResponse != null) {
-					this.pausedWaitingResponse.setResponse(new AckEndMove(this.robotID.getValue(), 1));
+					this.pausedWaitingResponse.setAckEndMessage(new AckEndMove(this.robotID.getValue(), 1));
 					this.pausedWaitingResponse = null;
 				}
 			}
@@ -250,7 +226,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqLoad(sender, actionID, this.robotID, nodeID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail)";
@@ -262,7 +238,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqUnload(sender, actionID, this.robotID, nodeID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail)";
@@ -274,7 +250,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqCharge(sender, actionID, this.robotID, nodeID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail)";
@@ -286,7 +262,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqChargeStop(sender, actionID, this.robotID, nodeID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail)";
@@ -299,7 +275,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqPause(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			String response = this.waitingResponse.getResponse();
+			String response = this.waitingResponse.getAckResponse();
 			this.waitingResponse = null;
 			return response;
 		}
@@ -313,7 +289,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqResume(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			String response = this.waitingResponse.getResponse();
+			String response = this.waitingResponse.getAckResponse();
 			this.waitingResponse = this.pausedWaitingResponse;
 			this.currentActionType = this.pausedWaitingResponse.getActionType();
 			this.pausedWaitingResponse = null;
@@ -329,7 +305,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqDoorOpen(sender, actionID, DoorID.valueOf(doorID));
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail)";
@@ -341,7 +317,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqDoorClose(sender, actionID, DoorID.valueOf(doorID));
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail)";
@@ -353,7 +329,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqGuideMove(sender, actionID, this.robotID, nodeID, direction);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail (actionID \"" + actionID + "\"))";
@@ -365,7 +341,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqPreciseMove(sender, actionID, this.robotID, nodeID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail (actionID \"" + actionID + "\"))";
@@ -377,7 +353,7 @@ public class MosInterface {
 			this.waitingResponse = new ReqFlatPreciseMove(sender, actionID, this.robotID, nodeID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail (actionID \"" + actionID + "\"))";
@@ -389,38 +365,36 @@ public class MosInterface {
 			this.waitingResponse = new ReqStraightBackMove(sender, actionID, this.robotID, nodeID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckResponse();
 		}
 		else {
 			return "(fail (actionID \"" + actionID + "\"))";
 		}
 	}
 	
-	public void palletizerStart(String sender, String actionID) throws Exception {
+	public String palletizerStart(String sender, String actionID) throws Exception {
 		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
 			this.waitingResponse = new ReqPalletizerStart(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-//			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckEndResponse();
 		}
 		else {
 			System.out.println("palletizer start failed");
-			return;
-//			return "(fail (actionID \"" + actionID + "\"))";
+			return "(fail (actionID \"" + actionID + "\"))";
 		}
 	}
 	
-	public void palletizerStop(String sender, String actionID) throws Exception {
+	public String palletizerStop(String sender, String actionID) throws Exception {
 		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
 			this.waitingResponse = new ReqPalletizerStop(sender, actionID, this.robotID);
 			this.currentActionType = this.waitingResponse.getActionType();
 			this.adaptor.send(this.waitingResponse);
-//			return this.waitingResponse.getResponse();
+			return this.waitingResponse.getAckEndResponse();
 		}
 		else {
 			System.out.println("palletizer stop failed");
-			return;
-//			return "(fail (actionID \"" + actionID + "\"))";
+			return "(fail (actionID \"" + actionID + "\"))";
 		}
 	}
 	
