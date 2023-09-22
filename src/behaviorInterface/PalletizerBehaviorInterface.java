@@ -86,10 +86,12 @@ public class PalletizerBehaviorInterface extends BehaviorInterface {
 			case EnterPalletizer:
 				robotID = gl.getExpression(1).asValue().stringValue();
 				nodeID = gl.getExpression(2).asValue().intValue();
+				mi.enterPalletizer(sender, actionID, nodeID);
 				break;
 			case ExitPalletizer:
 				robotID = gl.getExpression(1).asValue().stringValue();
 				nodeID = gl.getExpression(2).asValue().intValue();
+				mi.exitPalletizer(sender, actionID, nodeID);
 				break;
 
 			default:

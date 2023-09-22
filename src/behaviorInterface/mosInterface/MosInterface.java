@@ -398,7 +398,7 @@ public class MosInterface {
 		}
 	}
 	
-	public String enterPalletizer(String sender, String actionID, RobotID robotID, int nodeID) throws Exception {
+	public String enterPalletizer(String sender, String actionID, int nodeID) throws Exception {
 		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
 			ReqMessage msg = new ReqEnterPalletizer(sender, actionID, this.robotID, robotID, nodeID);
 			this.adaptor.send(msg);
@@ -410,7 +410,7 @@ public class MosInterface {
 		}
 	}
 	
-	public String exitPalletizer(String sender, String actionID, RobotID robotID, int nodeID) throws Exception {
+	public String exitPalletizer(String sender, String actionID, int nodeID) throws Exception {
 		if(this.isLogin && this.waitingResponse == null && this.currentActionType == null) {
 			ReqMessage msg = new ReqExitPalletizer(sender, actionID, this.robotID, robotID, nodeID);
 			this.adaptor.send(msg);
